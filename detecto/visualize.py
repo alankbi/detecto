@@ -87,19 +87,27 @@ def plot_prediction_grid(model, images, dim):
             # TODO make sure this actually works
             # Get the predictions and plot the box with the highest score
             preds = model.predict_top(images[index])
-            index += 1
 
             image = transforms.ToPILImage()(reverse_normalize(images[index]))
-            axes[i, j].imshow(image)
+            index += 1
+
+            if dim[0] <= 1 and dim[1] <= 1:
+                ax = axes
+            elif dim[0] <= 1:
+                ax = axes[j]
+            elif dim[1] <= 1:
+                ax = axes[i]
+            else:
+                ax = axes[i, j]
+            ax.imshow(image)
 
             for _, box, _ in preds:
                 width, height = box[2] - box[0], box[3] - box[1]
                 initial_pos = (box[0], box[1])
                 rect = patches.Rectangle(initial_pos, width, height, linewidth=1,
                                          edgecolor='r', facecolor='none')
-                axes[i, j].add_patch(rect)
-            axes[i, j].set_title('Highest prediction: {} (score: {})'
-                                 .format(preds[0][0], round(preds[0][2].item(), 2)))
+                ax.add_patch(rect)
+            ax.set_title('{} (score: {})'.format(preds[0][0], round(preds[0][2].item(), 2)))
 
     plt.show()
 

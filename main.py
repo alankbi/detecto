@@ -29,6 +29,7 @@ img = transform_img(image)
 # Shape should be (3, height, width), where 3 is the number of colors in RGB
 # This shape is necessary for when we eventually feed it into the pretrained models
 print(img.shape)
+print(img.min(), img.max())
 
 from detecto.core import Dataset, DataLoader, Model
 from detecto.utils import reverse_normalize, xml_to_csv
@@ -64,5 +65,5 @@ show_labeled_image(reverse_normalize(image), boxes)
 test_images = [dataset[i][0] for i in range(2)]
 plot_prediction_grid(model, test_images, (1, 2))
 
-detect_video(model, 'videos/input.mp4', 'videos/output.avi')
+detect_video(model, 'videos/input_short.mp4', 'videos/output_short.avi')
 

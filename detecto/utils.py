@@ -1,7 +1,6 @@
 from torchvision import transforms
 from glob import glob
 import pandas as pd
-
 import xml.etree.ElementTree as ET
 
 
