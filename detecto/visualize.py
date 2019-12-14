@@ -18,7 +18,6 @@ def detect_video(model, input_file, output_file, scaled_size=800, fps=30.0):
     frame_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     scale_down_factor = min(frame_height, frame_width) / scaled_size
-    print(scale_down_factor)
 
     # The VideoWriter with which we'll write our video with the boxes and labels
     # Parameters: filename, fourcc, fps, frame_size
@@ -77,9 +76,12 @@ def detect_video(model, input_file, output_file, scaled_size=800, fps=30.0):
 
 
 def plot_prediction_grid(model, images, dim):
-    # TODO pass in a single number for dim
+    if not isinstance(dim, tuple) and not isinstance(dim, list):
+        dim = (1, dim)
+
     if dim[0] * dim[1] != len(images):
         print('Grid dimensions do not match size of list of images')
+        return
 
     # TODO figsize adjust
     fig, axes = plt.subplots(dim[0], dim[1], figsize=(dim[0] * 5, dim[1] * 4))

@@ -100,7 +100,8 @@ class Dataset(torch.utils.data.Dataset):
                     image = t(image)
 
             # Scale down box if necessary
-            box /= int(scale_factor)
+            targets['boxes'] = (box / scale_factor).long()
+            box.long()
 
         return image, targets
 
