@@ -9,13 +9,16 @@ from torchvision import transforms
 
 # Runs the model predictions on the given video file and produces an output
 # video with real-time boxes and labels around detected objects
-def detect_video(model, input_file, output_file, scale_down_factor=5, fps=30.0):
+def detect_video(model, input_file, output_file, scaled_size=800, fps=30.0):
     # Read in the video
     video = cv2.VideoCapture(input_file)
 
     # Video frame dimensions
     frame_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    scale_down_factor = min(frame_height, frame_width) / scaled_size
+    print(scale_down_factor)
 
     # The VideoWriter with which we'll write our video with the boxes and labels
     # Parameters: filename, fourcc, fps, frame_size
@@ -24,7 +27,7 @@ def detect_video(model, input_file, output_file, scale_down_factor=5, fps=30.0):
     # Transform to apply on individual frames of the video
     transform_frame = transforms.Compose([
         transforms.ToPILImage(),
-        transforms.Resize(int(frame_height / scale_down_factor)),
+        transforms.Resize(scaled_size),
         transforms.ToTensor(),
         normalize_transform(),
     ])

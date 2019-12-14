@@ -68,8 +68,8 @@ class Dataset(torch.utils.data.Dataset):
 
             # We'll apply the transforms manually for more flexibility
             updated_transforms = []
-            scale_factor = 1
-            random_flip = 0
+            scale_factor = 1.0
+            random_flip = 0.0
             for t in self.transform.transforms:
                 # Add each transformation to our list
                 updated_transforms.append(t)
@@ -99,7 +99,7 @@ class Dataset(torch.utils.data.Dataset):
                 else:
                     image = t(image)
 
-                    # Scale down box if necessary
+            # Scale down box if necessary
             box /= int(scale_factor)
 
         return image, targets
@@ -161,10 +161,9 @@ class Model:
 
         return results
 
-    def fit(self, data_loader, epochs=10, learning_rate=0.005, momentum=0.9,
+    def fit(self, data_loader, val_loader=None, epochs=10, learning_rate=0.005, momentum=0.9,
             weight_decay=0.0005, lr_step_size=3, gamma=0.1, verbose=False):
         # Set model to be in train mode (some models' internal behavior depends on it)
-        self._model.train()
 
         losses = []
         # Get parameters that have grad turned on (i.e. parameters that should be trained)
@@ -179,6 +178,8 @@ class Model:
             if verbose:
                 print('Epoch {}'.format(epoch + 1))
 
+            # Training step
+            self._model.train()
             for images, targets in data_loader:
                 images, targets = self._to_device(images, targets)
 
@@ -195,10 +196,23 @@ class Model:
                 optimizer.step()
                 # Keep track of the loss (converted from a tensor to a normal number
                 # to save space on the GPU)
-                losses.append(total_loss.item())
+                # losses.append(total_loss.item()) TODO delete
 
-                if len(losses) % 10 == 0 and verbose:
-                    print('Loss: {}'.format(round(total_loss.item(), 4)))
+            # Validation step
+            if val_loader is not None:
+                avg_loss = 0
+                with torch.no_grad():
+                    for images, targets in data_loader:
+                        images, targets = self._to_device(images, targets)
+                        loss_dict = self._model(images, targets)
+                        total_loss = sum(loss for loss in loss_dict.values())
+                        avg_loss += total_loss.item()
+
+                avg_loss /= len(val_loader.dataset)
+                losses.append(avg_loss)
+
+                if verbose:
+                    print('Loss: {}'.format(avg_loss))
 
             # Update the learning rate every few epochs
             lr_scheduler.step()
