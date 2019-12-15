@@ -11,4 +11,4 @@ def get_image():
 
 
 def get_model():
-    return Model(3)
+    return Model(['test1', 'test2', 'test3'])

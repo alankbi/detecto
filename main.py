@@ -12,9 +12,6 @@ image = io.imread(img_name)
 print(image.shape)
 plt.imshow(image)
 plt.show()
-from detecto.core import Model
-model = Model(3)
-model.predict_top(image)
 
 # Apply some preliminary transformations to the image we read in
 transform_img = transforms.Compose([
@@ -50,7 +47,9 @@ show_labeled_image(image, target['boxes'])
 loader = DataLoader(dataset, batch_size=1, shuffle=True)
 val_loader = DataLoader(dataset, batch_size=1, shuffle=False)
 
-model = Model(3)
+classes = ['start_gate', 'start_tick']
+
+model = Model(classes)
 model.predict(image)
 losses = model.fit(loader, val_loader, epochs=1, lr_step_size=2, verbose=True)
 plt.plot(losses)
@@ -58,7 +57,7 @@ plt.show()
 
 
 # Loading working model
-model = Model.load('model.pth', 3)
+model = Model.load('model.pth', ['start_gate', 'start_tick'])
 
 
 image = dataset[1][0]

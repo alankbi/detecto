@@ -57,7 +57,6 @@ class Dataset(torch.utils.data.Dataset):
 
         # Read in the label: start_tick or start_gate
         label = self._csv.iloc[idx, 3]
-        label = torch.tensor(label_to_int(label)).view(1)  # TODO
 
         targets = {'boxes': box, 'labels': label}
 
@@ -106,7 +105,7 @@ class Dataset(torch.utils.data.Dataset):
 
 
 class Model:
-    def __init__(self, num_classes, device=None):
+    def __init__(self, classes, device=None):
         self._device = device if device else default_device
 
         # Load a model pre-trained on COCO
@@ -114,10 +113,13 @@ class Model:
 
         # Get the number of input features for the classifier
         in_features = self._model.roi_heads.box_predictor.cls_score.in_features
-        # Replace the pre-trained head with a new one
-        self._model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+        # Replace the pre-trained head with a new one (note: +1 because of the __background__ class)
+        self._model.roi_heads.box_predictor = FastRCNNPredictor(in_features, len(classes) + 1)
 
         self._model.to(self._device)
+
+        self._classes = ['__background__'] + classes
+        self._int_mapping = {label: index for index, label in enumerate(self._classes)}
 
     def _get_raw_predictions(self, images):
         self._model.eval()
@@ -148,7 +150,7 @@ class Model:
         results = []
         for i, pred in enumerate(preds):
             # TODO int to label
-            result = ([int_to_label(val) for val in pred['labels']], pred['boxes'], pred['scores'])
+            result = ([self._classes[val] for val in pred['labels']], pred['boxes'], pred['scores'])
             # result.append(images[i]) # TODO document this change (and above's change to tuple)
             results.append(result)
 
@@ -188,6 +190,7 @@ class Model:
             # Training step
             self._model.train()
             for images, targets in data_loader:
+                self._convert_to_int_labels(targets)
                 images, targets = self._to_device(images, targets)
 
                 # Calculate the model's loss (i.e. how well it does on the current
@@ -201,15 +204,13 @@ class Model:
                 total_loss.backward()
                 # Update model parameters from gradients: param -= learning_rate * param.grad
                 optimizer.step()
-                # Keep track of the loss (converted from a tensor to a normal number
-                # to save space on the GPU)
-                # losses.append(total_loss.item()) TODO delete
 
             # Validation step
             if val_loader is not None:
                 avg_loss = 0
                 with torch.no_grad():
                     for images, targets in data_loader:
+                        self._convert_to_int_labels(targets)
                         images, targets = self._to_device(images, targets)
                         loss_dict = self._model(images, targets)
                         total_loss = sum(loss for loss in loss_dict.values())
@@ -235,25 +236,12 @@ class Model:
         model._model.load_state_dict(torch.load(file, map_location=model._device))
         return model
 
+    def _convert_to_int_labels(self, targets):
+        for target in targets:
+            # Convert string labels to integer mapping
+            target['labels'] = torch.tensor(self._int_mapping[target['labels']]).view(1)
+
     def _to_device(self, images, targets):
         images = [image.to(self._device) for image in images]
         targets = [{k: v.to(self._device) for k, v in t.items()} for t in targets]
         return images, targets
-
-
-# TODO
-def label_to_int(label):
-    if label == 'start_gate':
-        return 1
-    if label == 'start_tick':
-        return 2
-    return 0
-
-
-# Map ints from model predictions to string labels
-def int_to_label(val):
-    if val == 1:
-        return 'start_gate'
-    if val == 2:
-        return 'start_tick'
-    return 'background'
