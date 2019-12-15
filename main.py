@@ -12,11 +12,14 @@ image = io.imread(img_name)
 print(image.shape)
 plt.imshow(image)
 plt.show()
+from detecto.core import Model
+model = Model(3)
+model.predict_top(image)
 
 # Apply some preliminary transformations to the image we read in
 transform_img = transforms.Compose([
     transforms.ToPILImage(),
-    transforms.Resize(800),  # Scale image height from 1080 to 216 for faster training
+    transforms.Resize(1800),  # Scale image height from 1080 to 216 for faster training
     transforms.RandomHorizontalFlip(0.5),  # Randomly flip some images for data augmentation
     transforms.ColorJitter(saturation=0.5),  # Randomize saturation for image augmentation
     transforms.ToTensor(),
@@ -48,6 +51,7 @@ loader = DataLoader(dataset, batch_size=1, shuffle=True)
 val_loader = DataLoader(dataset, batch_size=1, shuffle=False)
 
 model = Model(3)
+model.predict(image)
 losses = model.fit(loader, val_loader, epochs=1, lr_step_size=2, verbose=True)
 plt.plot(losses)
 plt.show()
@@ -57,7 +61,7 @@ plt.show()
 model = Model.load('model.pth', 3)
 
 
-image = dataset[0][0]
+image = dataset[1][0]
 labels, boxes, scores = model.predict(image)
 print(labels, boxes, scores, image.shape)
 show_labeled_image(reverse_normalize(image), boxes)

@@ -3,7 +3,7 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import torch
 
-from detecto.utils import reverse_normalize, normalize_transform
+from detecto.utils import default_transforms, reverse_normalize, normalize_transform, _is_iterable
 from torchvision import transforms
 
 
@@ -31,7 +31,6 @@ def detect_video(model, input_file, output_file, scaled_size=800, fps=30.0):
         normalize_transform(),
     ])
 
-    # TODO make sure this actually works
     # Loop through every frame of the video
     while True:
         ret, frame = video.read()
@@ -75,13 +74,12 @@ def detect_video(model, input_file, output_file, scaled_size=800, fps=30.0):
     cv2.destroyAllWindows()
 
 
-def plot_prediction_grid(model, images, dim):
-    if not isinstance(dim, tuple) and not isinstance(dim, list):
+def plot_prediction_grid(model, images, dim, show=True):
+    if not _is_iterable(dim):
         dim = (1, dim)
 
     if dim[0] * dim[1] != len(images):
-        print('Grid dimensions do not match size of list of images')
-        return
+        raise ValueError('Grid dimensions do not match size of list of images')
 
     # TODO figsize adjust
     fig, axes = plt.subplots(dim[0], dim[1], figsize=(dim[0] * 5, dim[1] * 4))
@@ -89,11 +87,14 @@ def plot_prediction_grid(model, images, dim):
     index = 0
     for i in range(dim[0]):
         for j in range(dim[1]):
-            # TODO make sure this actually works
             # Get the predictions and plot the box with the highest score
             preds = model.predict_top(images[index])
 
-            image = transforms.ToPILImage()(reverse_normalize(images[index]))
+            image = images[index]
+            if not isinstance(images[index], torch.Tensor):
+                image = default_transforms()(images[index])
+
+            image = transforms.ToPILImage()(reverse_normalize(image))
             index += 1
 
             if dim[0] <= 1 and dim[1] <= 1:
@@ -114,11 +115,12 @@ def plot_prediction_grid(model, images, dim):
                 ax.add_patch(rect)
             ax.set_title('{} (score: {})'.format(preds[0][0], round(preds[0][2].item(), 2)))
 
-    plt.show()
+    if show:
+        plt.show()
 
 
 # Show the image along with the specified boxes around the labeled item
-def show_labeled_image(image, boxes):
+def show_labeled_image(image, boxes, show=True):
     fig, ax = plt.subplots(1)
     # If the image is already a tensor, convert it back to a PILImage
     if isinstance(image, torch.Tensor):
@@ -135,4 +137,6 @@ def show_labeled_image(image, boxes):
                                  edgecolor='r', facecolor='none')
 
         ax.add_patch(rect)
-    plt.show()
+
+    if show:
+        plt.show()

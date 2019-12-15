@@ -5,7 +5,7 @@ import torch
 import torchvision
 
 from detecto.config import default_device
-from detecto.utils import normalize_transform, filter_top_predictions
+from detecto.utils import default_transforms, filter_top_predictions, _is_iterable
 from skimage import io
 from torchvision import transforms
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
@@ -33,7 +33,7 @@ class Dataset(torch.utils.data.Dataset):
         self._root_dir = root_dir
 
         if transform is None:
-            self.transform = transforms.Compose([transforms.ToTensor(), normalize_transform()])
+            self.transform = default_transforms()
         else:
             self.transform = transform
 
@@ -101,7 +101,6 @@ class Dataset(torch.utils.data.Dataset):
 
             # Scale down box if necessary
             targets['boxes'] = (box / scale_factor).long()
-            box.long()
 
         return image, targets
 
@@ -124,19 +123,25 @@ class Model:
         self._model.eval()
 
         with torch.no_grad():
+            # Convert image into a list of length 1 if not already a list
+            if not _is_iterable(images):
+                images = [images]
+
+            # Convert to tensor and normalize if not already
+            if not isinstance(images[0], torch.Tensor):
+                defaults = default_transforms()
+                images = [defaults(img) for img in images]
+
             # Once again, send images to the GPU if it's available
-            if isinstance(images, list):
-                images = [img.to(self._device) for img in images]
-            else:
-                # Convert image into a list of length 1 if not already a list
-                images = [images.to(self._device)]
+            images = [img.to(self._device) for img in images]
+
             preds = self._model(images)
             # Send predictions to CPU to save space on GPU
             preds = [{k: v.to(torch.device('cpu')) for k, v in p.items()} for p in preds]
             return preds
 
     def predict(self, images):
-        is_single_image = (not isinstance(images, list))
+        is_single_image = not _is_iterable(images)
         images = [images] if is_single_image else images
         preds = self._get_raw_predictions(images)
 
@@ -153,6 +158,7 @@ class Model:
     def predict_top(self, images):
         predictions = self.predict(images)
 
+        # If tuple but not list, then it's from a single image
         if not isinstance(predictions, list):
             return filter_top_predictions(*predictions)
 

@@ -14,6 +14,10 @@ def filter_top_predictions(labels, boxes, scores):
     return preds
 
 
+def default_transforms():
+    return transforms.Compose([transforms.ToTensor(), normalize_transform()])
+
+
 def normalize_transform():
     # Default for PyTorch's pre-trained models
     return transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
@@ -45,3 +49,7 @@ def xml_to_csv(path, output_path):
     column_names = ['filename', 'width', 'height', 'class', 'xmin', 'ymin', 'xmax', 'ymax']
     xml_df = pd.DataFrame(xml_list, columns=column_names)
     xml_df.to_csv(output_path, index=None)
+
+
+def _is_iterable(variable):
+    return isinstance(variable, list) or isinstance(variable, tuple)

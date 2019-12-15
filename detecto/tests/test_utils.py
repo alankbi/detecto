@@ -1,15 +1,11 @@
 import os
 import pandas as pd
 import torch
+import torchvision
 
+from .helpers import get_image
 from detecto.utils import *
-from skimage import io
-
-
-def get_image():
-    path = os.path.dirname(__file__)
-    file = "static/image.jpg"
-    return io.imread(os.path.join(path, file))
+from detecto.utils import _is_iterable
 
 
 def test_filter_top_predictions():
@@ -30,6 +26,15 @@ def test_filter_top_predictions():
 
     # Correct scores
     assert {preds[0][2], preds[1][2]} == {5, 4}
+
+
+def test_default_transforms():
+    transforms = default_transforms()
+
+    assert isinstance(transforms.transforms[0], torchvision.transforms.ToTensor)
+    assert isinstance(transforms.transforms[1], torchvision.transforms.Normalize)
+    assert transforms.transforms[1].mean == normalize_transform().mean
+    assert transforms.transforms[1].std == normalize_transform().std
 
 
 def test_normalize_functions():
@@ -58,3 +63,14 @@ def test_xml_to_csv():
     assert csv.loc[0, 'ymax'] == 784
     assert csv.loc[1, 'xmin'] == 1
 
+
+def test__is_iterable():
+    test1 = [1, 2]
+    test2 = (3, 4)
+    test3 = torch.ones(2)
+    test4 = 5
+
+    assert _is_iterable(test1)
+    assert _is_iterable(test2)
+    assert not _is_iterable(test3)
+    assert not _is_iterable(test4)
