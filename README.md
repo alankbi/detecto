@@ -1,4 +1,8 @@
-# Gate Detection with PyTorch
+[![CircleCI](https://circleci.com/gh/alankbi/detecto/tree/master.svg?style=svg)](https://circleci.com/gh/alankbi/detecto/tree/master)
+
+# Detecto
+
+A Python package for quick and easy object detection. 
 
 This markdown file provides instruction and documentation for the [Gate Detection notebook](https://colab.research.google.com/drive/1gSTGj93GdHxyOBii1vLLfmRgraL7M8vo) for Duke Robotics. Before running the notebook, read the intro and do a CTRL+F search for "ATTENTION" to see which cells require your attention before the notebook can run smoothly.  
 

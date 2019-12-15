@@ -1,6 +1,7 @@
 matplotlib
 opencv-python
 pandas
+pytest
 scikit-image
 torch
 torchvision
