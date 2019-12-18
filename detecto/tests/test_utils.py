@@ -56,7 +56,7 @@ def test_xml_to_csv():
     csv = pd.read_csv(output_path)
 
     assert len(csv) == 2
-    assert csv.loc[0, 'filename'] == 'frame199.jpg'
+    assert csv.loc[0, 'filename'] == 'image.jpg'
     assert csv.loc[1, 'class'] == 'start_gate'
     assert csv.loc[0, 'width'] == 1720
     assert csv.loc[1, 'height'] == 1080

@@ -231,8 +231,8 @@ class Model:
         torch.save(self._model.state_dict(), path)
 
     @staticmethod
-    def load(file, num_classes):
-        model = Model(num_classes)
+    def load(file, classes):
+        model = Model(classes)
         model._model.load_state_dict(torch.load(file, map_location=model._device))
         return model
 
