@@ -12,8 +12,8 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
 
 class DataLoader(torch.utils.data.DataLoader):
-    def __init__(self, dataset, batch_size=2, shuffle=True):
-        super().__init__(dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=self.collate_data)
+    def __init__(self, dataset, **kwargs):
+        super().__init__(dataset, collate_fn=DataLoader.collate_data, **kwargs)
 
     @staticmethod
     def collate_data(batch):

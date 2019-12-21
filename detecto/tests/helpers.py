@@ -1,7 +1,20 @@
 import os
 
-from detecto.core import Model
+from detecto.core import Model, Dataset
+from detecto.utils import xml_to_csv
 from skimage import io
+
+
+def get_dataset(**kwargs):
+    path = os.path.dirname(__file__)
+    input_folder = os.path.join(path, 'static')
+    labels_path = os.path.join(path, 'static/labels.csv')
+
+    xml_to_csv(input_folder, labels_path)
+    dataset = Dataset(labels_path, input_folder, **kwargs)
+    os.remove(labels_path)
+
+    return dataset
 
 
 def get_image():

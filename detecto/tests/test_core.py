@@ -1,8 +1,29 @@
+import torch
+
 from detecto.core import *
+from .helpers import get_dataset
+from torchvision import transforms
 
 
 def test_dataset():
-    pass
+    dataset = get_dataset()
+    assert len(dataset) == 2
+    assert isinstance(dataset[0][0], torch.Tensor)
+    assert isinstance(dataset[0][1], dict)
+    assert dataset[0][0].shape == (3, 1080, 1720)
+    assert 'boxes' in dataset[0][1] and 'labels' in dataset[0][1]
+    assert dataset[0][1]['boxes'].shape == (1, 4)
+    assert dataset[0][1]['labels'] == 'start_tick'
+
+    transform = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.Resize(108),
+        transforms.RandomHorizontalFlip(1),
+        transforms.ToTensor()
+    ])
+    dataset = get_dataset(transform=transform)
+    assert dataset[1][0].shape == (3, 108, 172)
+    assert torch.all(dataset[1][1]['boxes'][0] == torch.tensor([6, 41, 171, 107]))
 
 
 def test_collate_fn():
@@ -10,8 +31,8 @@ def test_collate_fn():
     test_output = DataLoader.collate_data(test_input)
 
     assert isinstance(test_output, tuple)
-    assert isinstance(test_output[0], list)
     assert len(test_output) == 2
+    assert isinstance(test_output[0], list)
     assert len(test_output[0]) == 3
 
     assert test_output[0][0] == 1
@@ -21,7 +42,23 @@ def test_collate_fn():
 
 
 def test_dataloader():
-    pass
+    dataset = get_dataset()
+    loader = DataLoader(dataset, batch_size=2)
+
+    iterations = 0
+    for data in loader:
+        iterations += 1
+
+        assert isinstance(data, tuple)
+        assert len(data) == 2
+        assert isinstance(data[0], list)
+        assert len(data[0]) == 2
+
+        assert isinstance(data[0][0], torch.Tensor)
+        assert isinstance(data[0][1], torch.Tensor)
+        assert 'boxes' in dataset[0][1] and 'labels' in dataset[1][1]
+
+    assert iterations == 1
 
 
 def test_model():

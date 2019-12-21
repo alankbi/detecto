@@ -63,6 +63,8 @@ def test_xml_to_csv():
     assert csv.loc[0, 'ymax'] == 784
     assert csv.loc[1, 'xmin'] == 1
 
+    os.remove(output_path)
+
 
 def test__is_iterable():
     test1 = [1, 2]
