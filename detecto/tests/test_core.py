@@ -1,8 +1,9 @@
 import torch
 
 from detecto.core import *
-from .helpers import get_dataset
+from .helpers import get_dataset, get_model
 from torchvision import transforms
+from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
 
 def test_dataset():
@@ -61,5 +62,33 @@ def test_dataloader():
     assert iterations == 1
 
 
-def test_model():
+def test_model_internal():
+    model = get_model()
+
+    assert model._device == torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+
+    box_predictor = model._model.roi_heads.box_predictor
+    assert isinstance(box_predictor, FastRCNNPredictor)
+    assert box_predictor.cls_score.out_features == 4
+
+    assert model._classes == ['__background__', 'test1', 'test2', 'test3']
+    assert model._int_mapping['test1'] == 1
+
+    for k in model._int_mapping:
+        assert model._classes[model._int_mapping[k]] == k
+
+
+def test_model_fit():
+    pass
+
+
+def test_model_predict():
+    pass
+
+
+def test_model_save_load():
+    pass
+
+
+def test_model_helpers():
     pass
