@@ -44,6 +44,7 @@ def test_normalize_functions():
     normalized_img = transform(image)
     reversed_img = reverse_normalize(normalized_img)
 
+    # Normalized image that's then reversed should be close to original
     assert (image - reversed_img).max() < 0.05
 
 

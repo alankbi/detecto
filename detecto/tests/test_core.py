@@ -6,7 +6,10 @@ from torchvision import transforms
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
 
+# Test that the dataset returns the correct things and properly
+# applies the default or given transforms
 def test_dataset():
+    # Test the format of the values returned by indexing the dataset
     dataset = get_dataset()
     assert len(dataset) == 2
     assert isinstance(dataset[0][0], torch.Tensor)
@@ -22,11 +25,15 @@ def test_dataset():
         transforms.RandomHorizontalFlip(1),
         transforms.ToTensor()
     ])
+
+    # Test that the transforms are properly applied
     dataset = get_dataset(transform=transform)
     assert dataset[1][0].shape == (3, 108, 172)
     assert torch.all(dataset[1][1]['boxes'][0] == torch.tensor([6, 41, 171, 107]))
 
 
+# Ensure that the collate function of the DataLoader properly
+# converts a list of tuples into a tuple of lists
 def test_collate_fn():
     test_input = [(1, 10), (2, 20), (3, 30)]
     test_output = DataLoader.collate_data(test_input)
@@ -42,6 +49,8 @@ def test_collate_fn():
     assert test_output[1][2] == 30
 
 
+# Test that the dataloader correctly loops through every element
+# in the dataset and returns them in the right format
 def test_dataloader():
     dataset = get_dataset()
     loader = DataLoader(dataset, batch_size=2)
@@ -62,6 +71,7 @@ def test_dataloader():
     assert iterations == 1
 
 
+# Ensure that the model's internal parameters are properly set
 def test_model_internal():
     model = get_model()
 
@@ -74,10 +84,12 @@ def test_model_internal():
     assert model._classes == ['__background__', 'test1', 'test2', 'test3']
     assert model._int_mapping['test1'] == 1
 
+    # _int_mapping should give the right index of each class
     for k in model._int_mapping:
         assert model._classes[model._int_mapping[k]] == k
 
 
+# Ensure that fitting the model increases accuracy and returns the losses
 def test_model_fit():
     model = Model(['start_tick', 'start_gate'])
 
@@ -96,43 +108,42 @@ def test_model_fit():
 
     losses = model.fit(loader, val_loader=loader, epochs=2)
 
+    # Average loss during training should be lower than initial loss
     assert len(losses) == 2
     assert sum(losses) / 2 < initial_loss
 
+    # Should not return anything if not validation losses are produced
     losses = model.fit(loader, loader, epochs=0)
     assert losses is None
 
 
+# Test both the predict and predict_top methods with both single
+# images and lists of images to predict on
 def test_model_predict():
     classes = ['start_tick', 'start_gate']
     path = os.path.dirname(__file__)
     file = os.path.join(path, 'static/model.pth')
 
+    # Load in a pre-fitted model so it can actually make predictions
     model = Model.load(file, classes)
     image = get_image()
 
-    # Test predict method
+    # Test predict method on a single image
     pred = model.predict(image)
-    print('pred')
-    print(pred)
-
     assert isinstance(pred, tuple)
     assert set(pred[0]) == set(classes)
     assert isinstance(pred[1][0], torch.Tensor) and pred[1][0].shape[0] == 4
     assert pred[2][0] > 0.5
 
+    # Test predict method on a list of images
     preds = model.predict([image])
-    print('preds')
-    print(preds)
     assert len(preds) == 1
     assert preds[0][0] == pred[0]
     assert torch.all(preds[0][1] == pred[1])
     assert torch.all(preds[0][2] == pred[2])
 
-    # Test predict_top method
+    # Test predict_top method on a list of images
     top_preds = model.predict_top([image])
-    print('top preds')
-    print(top_preds)
     assert len(top_preds) == 1
 
     top_pred = top_preds[0]
@@ -141,9 +152,10 @@ def test_model_predict():
     assert isinstance(top_pred[0][1], torch.Tensor) and top_pred[0][1].shape[0] == 4
     assert top_pred[0][2] == pred[2][0] or top_pred[1][2] == pred[2][0]
 
+    # Test predict_top method on a single image
     top_pred = model.predict_top(image)
-    print('top pred')
-    print(top_pred)
+    # Check that it matches the prediction from top_preds
+    # excluding the order of the two unique labels
     if top_pred[0][0] == top_preds[0][0][0]:
         assert torch.all(top_pred[0][1] == top_preds[0][0][1])
         assert top_pred[0][2] == top_preds[0][0][2]
@@ -156,6 +168,7 @@ def test_model_predict():
         assert top_pred[1][2] == top_preds[0][0][2]
 
 
+# Test that save and load both work properly
 def test_model_helpers():
     path = os.path.dirname(__file__)
     file = os.path.join(path, 'static/saved_model.pth')

@@ -27,11 +27,12 @@ def test_plot_prediction_grid():
         assert False  # An error occurred
 
     image = get_image()
-    plot_prediction_grid(model, [image], 1, show=False)
+    plot_prediction_grid(model, [image], 1, show=False)  # Shouldn't throw an error
 
 
 def test_show_labeled_image():
     image = get_image()
 
+    # Shouldn't throw any errors
     show_labeled_image(image, torch.ones(4), show=False)
     show_labeled_image(image, torch.ones(10, 4), show=False)
