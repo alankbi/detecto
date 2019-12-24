@@ -1,7 +1,12 @@
 import matplotlib.pyplot as plt
 import os
+
 from torchvision import transforms
 from skimage import io
+
+from detecto.core import Dataset, DataLoader, Model
+from detecto.utils import normalize_transform, reverse_normalize, xml_to_csv
+from detecto.visualize import show_labeled_image, plot_prediction_grid, detect_video
 
 # Relative folder paths/names for your train/test image files and XML labels
 IMAGES = 'images'
@@ -20,8 +25,7 @@ transform_img = transforms.Compose([
     transforms.RandomHorizontalFlip(0.5),  # Randomly flip some images for data augmentation
     transforms.ColorJitter(saturation=0.5),  # Randomize saturation for image augmentation
     transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406],  # default for pre-trained models
-                         std=[0.229, 0.224, 0.225]),
+    normalize_transform(),
 ])
 
 img = transform_img(image)
@@ -29,10 +33,6 @@ img = transform_img(image)
 # This shape is necessary for when we eventually feed it into the pretrained models
 print(img.shape)
 print(img.min(), img.max())
-
-from detecto.core import Dataset, DataLoader, Model
-from detecto.utils import reverse_normalize, xml_to_csv
-from detecto.visualize import show_labeled_image, plot_prediction_grid, detect_video
 
 xml_to_csv('xml_labels', 'labels.csv')
 
@@ -57,7 +57,7 @@ plt.show()
 
 
 # Loading working model
-model = Model.load('model.pth', ['start_gate', 'start_tick'])
+model = Model.load('detecto/tests/static/model.pth', ['start_gate', 'start_tick'])
 
 
 image = dataset[1][0]

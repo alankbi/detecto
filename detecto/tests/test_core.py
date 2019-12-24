@@ -1,7 +1,7 @@
 import torch
 
 from detecto.core import *
-from .helpers import get_dataset, get_model
+from .helpers import get_dataset, get_image, get_model
 from torchvision import transforms
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
@@ -79,16 +79,92 @@ def test_model_internal():
 
 
 def test_model_fit():
-    pass
+    model = Model(['start_tick', 'start_gate'])
+
+    dataset = get_dataset()
+    loader = DataLoader(dataset, batch_size=1)
+
+    initial_loss = 0
+    with torch.no_grad():
+        for images, targets in loader:
+            model._convert_to_int_labels(targets)
+            images, targets = model._to_device(images, targets)
+            loss_dict = model._model(images, targets)
+            total_loss = sum(loss for loss in loss_dict.values())
+            initial_loss += total_loss.item()
+    initial_loss /= len(loader.dataset)
+
+    losses = model.fit(loader, val_loader=loader, epochs=2)
+
+    assert len(losses) == 2
+    assert sum(losses) / 2 < initial_loss
+
+    losses = model.fit(loader, loader, epochs=0)
+    assert losses is None
 
 
 def test_model_predict():
-    pass
+    classes = ['start_tick', 'start_gate']
+    path = os.path.dirname(__file__)
+    file = os.path.join(path, 'static/model.pth')
 
+    model = Model.load(file, classes)
+    image = get_image()
 
-def test_model_save_load():
-    pass
+    # Test predict method
+    pred = model.predict(image)
+    print('pred')
+    print(pred)
+
+    assert isinstance(pred, tuple)
+    assert set(pred[0]) == set(classes)
+    assert isinstance(pred[1][0], torch.Tensor) and pred[1][0].shape[0] == 4
+    assert pred[2][0] > 0.5
+
+    preds = model.predict([image])
+    print('preds')
+    print(preds)
+    assert len(preds) == 1
+    assert preds[0][0] == pred[0]
+    assert torch.all(preds[0][1] == pred[1])
+    assert torch.all(preds[0][2] == pred[2])
+
+    # Test predict_top method
+    top_preds = model.predict_top([image])
+    print('top preds')
+    print(top_preds)
+    assert len(top_preds) == 1
+
+    top_pred = top_preds[0]
+    assert len(top_pred) == 2 and len(top_pred[0]) == 3
+    assert {top_pred[0][0], top_pred[1][0]} == {'start_tick', 'start_gate'}
+    assert isinstance(top_pred[0][1], torch.Tensor) and top_pred[0][1].shape[0] == 4
+    assert top_pred[0][2] == pred[2][0] or top_pred[1][2] == pred[2][0]
+
+    top_pred = model.predict_top(image)
+    print('top pred')
+    print(top_pred)
+    if top_pred[0][0] == top_preds[0][0][0]:
+        assert torch.all(top_pred[0][1] == top_preds[0][0][1])
+        assert top_pred[0][2] == top_preds[0][0][2]
+        assert torch.all(top_pred[1][1] == top_preds[0][1][1])
+        assert top_pred[1][2] == top_preds[0][1][2]
+    else:
+        assert torch.all(top_pred[0][1] == top_preds[0][1][1])
+        assert top_pred[0][2] == top_preds[0][1][2]
+        assert torch.all(top_pred[1][1] == top_preds[0][0][1])
+        assert top_pred[1][2] == top_preds[0][0][2]
 
 
 def test_model_helpers():
-    pass
+    path = os.path.dirname(__file__)
+    file = os.path.join(path, 'static/saved_model.pth')
+
+    model = get_model()
+
+    model.save(file)
+    model = Model.load(file, ['test1', 'test2', 'test3'])
+
+    assert model._model is not None
+
+    os.remove(file)
