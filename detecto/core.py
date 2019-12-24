@@ -159,7 +159,6 @@ class Model:
     # TODO equivalent of predict() then filter_top, but supporting multiple images
     def predict_top(self, images):
         predictions = self.predict(images)
-        print('PRED: {}'.format(predictions))
 
         # If tuple but not list, then it's from a single image
         if not isinstance(predictions, list):
@@ -167,7 +166,6 @@ class Model:
 
         results = []
         for pred in predictions:
-            print('filter top: {}'.format(filter_top_predictions(*pred)))
             results.append(filter_top_predictions(*pred))
 
         return results
@@ -229,6 +227,9 @@ class Model:
 
         if len(losses) > 0:
             return losses
+
+    def get_internal_model(self):
+        return self._model
 
     def save(self, path):
         torch.save(self._model.state_dict(), path)

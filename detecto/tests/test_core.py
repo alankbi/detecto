@@ -168,7 +168,7 @@ def test_model_predict():
         assert top_pred[1][2] == top_preds[0][0][2]
 
 
-# Test that save and load both work properly
+# Test that save, load, and get_internal_model all work properly
 def test_model_helpers():
     path = os.path.dirname(__file__)
     file = os.path.join(path, 'static/saved_model.pth')
@@ -179,5 +179,6 @@ def test_model_helpers():
     model = Model.load(file, ['test1', 'test2', 'test3'])
 
     assert model._model is not None
+    assert model.get_internal_model() is model._model
 
     os.remove(file)
