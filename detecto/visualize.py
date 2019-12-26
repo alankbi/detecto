@@ -7,6 +7,7 @@ from detecto.utils import default_transforms, reverse_normalize, normalize_trans
 from torchvision import transforms
 
 
+# TODO all functions: check for no predictions produced
 # Runs the model predictions on the given video file and produces an output
 # video with real-time boxes and labels around detected objects
 def detect_video(model, input_file, output_file, scaled_size=800, fps=30.0):

@@ -47,6 +47,7 @@ jobs:
       - run:
           name: run tests
           command: |
+            curl -L -o detecto/tests/static/model.pth https://www.dropbox.com/s/kjalrfs3la97du8/model.pth?dl=1
             . venv/bin/activate
             python -m pytest
 
