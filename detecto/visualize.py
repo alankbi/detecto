@@ -7,7 +7,6 @@ from detecto.utils import default_transforms, reverse_normalize, normalize_trans
 from torchvision import transforms
 
 
-# TODO all functions: check for no predictions produced
 # Runs the model predictions on the given video file and produces an output
 # video with real-time boxes and labels around detected objects
 def detect_video(model, input_file, output_file, scaled_size=800, fps=30.0):
@@ -82,7 +81,7 @@ def plot_prediction_grid(model, images, dim, show=True):
     if dim[0] * dim[1] != len(images):
         raise ValueError('Grid dimensions do not match size of list of images')
 
-    # TODO figsize adjust
+    # TODO: Create a better system for adjusting figsize (maybe make it a parameter)
     fig, axes = plt.subplots(dim[0], dim[1], figsize=(dim[0] * 5, dim[1] * 4))
 
     index = 0
@@ -114,7 +113,10 @@ def plot_prediction_grid(model, images, dim, show=True):
                 rect = patches.Rectangle(initial_pos, width, height, linewidth=1,
                                          edgecolor='r', facecolor='none')
                 ax.add_patch(rect)
-            ax.set_title('{} (score: {})'.format(preds[0][0], round(preds[0][2].item(), 2)))
+
+            # If any predictions exist
+            if len(preds) > 0:
+                ax.set_title('{} (score: {})'.format(preds[0][0], round(preds[0][2].item(), 2)))
 
     if show:
         plt.show()

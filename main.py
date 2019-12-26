@@ -42,7 +42,7 @@ image, target = dataset[0]
 # Shows image shape, bounds of the box, and the label for the item in the box
 print(image.shape, target['boxes'], target['labels'])
 
-show_labeled_image(image, target['boxes'])
+show_labeled_image(reverse_normalize(image), target['boxes'])
 
 loader = DataLoader(dataset, batch_size=1, shuffle=True)
 val_loader = DataLoader(dataset, batch_size=1, shuffle=False)
@@ -51,9 +51,10 @@ classes = ['start_gate', 'start_tick']
 
 model = Model(classes)
 model.predict(image)
-losses = model.fit(loader, val_loader, epochs=1, lr_step_size=2, verbose=True)
-plt.plot(losses)
-plt.show()
+losses = model.fit(loader, val_loader, epochs=0, lr_step_size=2, verbose=True)
+if losses is not None:
+    plt.plot(losses)
+    plt.show()
 
 
 # Loading working model

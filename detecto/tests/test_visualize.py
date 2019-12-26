@@ -1,6 +1,6 @@
 import os
 
-from .helpers import get_image, get_model
+from .helpers import get_image, get_model, empty_predictor
 from detecto.visualize import *
 
 
@@ -10,6 +10,13 @@ def test_detect_video():
     output_video = os.path.join(path, 'static/output_video.avi')
 
     model = get_model()
+    detect_video(model, input_video, output_video)
+
+    assert os.path.isfile(output_video)
+    os.remove(output_video)
+
+    # Ensure it works when the model makes no predictions
+    model._model.forward = empty_predictor
     detect_video(model, input_video, output_video)
 
     assert os.path.isfile(output_video)
@@ -29,6 +36,10 @@ def test_plot_prediction_grid():
     image = get_image()
     plot_prediction_grid(model, [image], 1, show=False)  # Shouldn't throw an error
 
+    # Ensure it works when the model makes no predictions
+    model._model.forward = empty_predictor
+    plot_prediction_grid(model, [image], 1, show=False)  # Shouldn't throw an error
+
 
 def test_show_labeled_image():
     image = get_image()
@@ -36,3 +47,4 @@ def test_show_labeled_image():
     # Shouldn't throw any errors
     show_labeled_image(image, torch.ones(4), show=False)
     show_labeled_image(image, torch.ones(10, 4), show=False)
+    show_labeled_image(image, torch.empty(0, 4), show=False)

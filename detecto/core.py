@@ -148,15 +148,13 @@ class Model:
         preds = self._get_raw_predictions(images)
 
         results = []
-        for i, pred in enumerate(preds):
-            # TODO int to label
+        for pred in preds:
+            # Convert predicted ints into their corresponding string labels
             result = ([self._classes[val] for val in pred['labels']], pred['boxes'], pred['scores'])
-            # result.append(images[i]) # TODO document this change (and above's change to tuple)
             results.append(result)
 
         return results[0] if is_single_image else results
 
-    # TODO equivalent of predict() then filter_top, but supporting multiple images
     def predict_top(self, images):
         predictions = self.predict(images)
 

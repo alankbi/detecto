@@ -1,4 +1,5 @@
 import os
+import torch
 
 from detecto.core import Model, Dataset
 from detecto.utils import xml_to_csv
@@ -25,3 +26,7 @@ def get_image():
 
 def get_model():
     return Model(['test1', 'test2', 'test3'])
+
+
+def empty_predictor(x):
+    return [{'labels': torch.empty(0), 'boxes': torch.empty(0, 4), 'scores': torch.empty(0)}]

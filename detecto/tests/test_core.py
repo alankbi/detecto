@@ -1,7 +1,7 @@
 import torch
 
 from detecto.core import *
-from .helpers import get_dataset, get_image, get_model
+from .helpers import get_dataset, get_image, get_model, empty_predictor
 from torchvision import transforms
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
@@ -166,6 +166,15 @@ def test_model_predict():
         assert top_pred[0][2] == top_preds[0][1][2]
         assert torch.all(top_pred[1][1] == top_preds[0][0][1])
         assert top_pred[1][2] == top_preds[0][0][2]
+
+    # Test return values when no predictions are made
+    model._model.forward = empty_predictor
+    preds = model.predict([image])
+    assert len(preds) == 1
+    assert preds[0][0] == [] and preds[0][1].nelement() == 0 and preds[0][2].nelement() == 0
+
+    top_preds = model.predict_top([image])
+    assert top_preds == [[]]
 
 
 # Test that save, load, and get_internal_model all work properly
