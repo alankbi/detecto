@@ -143,6 +143,14 @@ class Model:
             return preds
 
     def predict(self, images):
+        """
+        f
+
+        :param images: f
+        :type images: f
+        :return: f
+        :rtype: f
+        """
         is_single_image = not _is_iterable(images)
         images = [images] if is_single_image else images
         preds = self._get_raw_predictions(images)

@@ -48,6 +48,16 @@ def test_normalize_functions():
     assert (image - reversed_img).max() < 0.05
 
 
+def test_read_image():
+    path = os.path.dirname(__file__)
+    file = 'static/image.jpg'
+    image_path = os.path.join(path, file)
+
+    image = get_image()
+
+    assert (read_image(image_path) == image).all()
+
+
 def test_xml_to_csv():
     path = os.path.dirname(__file__)
     input_folder = os.path.join(path, 'static')

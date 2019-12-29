@@ -10,6 +10,16 @@ Welcome to Detecto's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   usage/quickstart
+
+
+API Documentation
+=================
+
+.. toctree::
+   :maxdepth: 2
+
+   api
 
 
 Indices and tables
