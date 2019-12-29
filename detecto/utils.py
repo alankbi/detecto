@@ -6,6 +6,31 @@ from torchvision import transforms
 from glob import glob
 
 
+def default_transforms():
+    """Returns the default, bare-minimum transformations that should be
+    applied to images passed to classes in the :mod:`detecto.core` module.
+
+    :return: A torchvision `transforms.Compose
+        <https://pytorch.org/docs/stable/torchvision/transforms.html>`_
+        object containing a transforms.ToTensor object and the
+        transforms.Normalize object returned by
+        :func:`detecto.utils.normalize_transform`.
+    :rtype: torchvision.transforms.Compose
+
+    **Example**::
+
+        >>> from detecto.core import Dataset
+        >>> from detecto.utils import default_transforms
+
+        >>> # Note: if transform=None, the Dataset will automatically
+        >>> # apply these default transforms to images
+        >>> defaults = default_transforms()
+        >>> dataset = Dataset('labels.csv', 'images/', transform=defaults)
+    """
+
+    return transforms.Compose([transforms.ToTensor(), normalize_transform()])
+
+
 def filter_top_predictions(labels, boxes, scores):
     """Filters out the top scoring predictions of each class from the
     given data. Note: passing the predictions from
@@ -48,30 +73,6 @@ def filter_top_predictions(labels, boxes, scores):
     return preds
 
 
-def default_transforms():
-    """Returns the default, bare-minimum transformations that should be
-    applied to images passed to classes in the :mod:`detecto.core` module.
-
-    :return: A torchvision `transforms.Compose
-        <https://pytorch.org/docs/stable/torchvision/transforms.html>`_
-        object containing a transforms.ToTensor object and the
-        transforms.Normalize object returned by
-        :func:`detecto.utils.normalize_transform`.
-    :rtype: torchvision.transforms.Compose
-
-    **Example**::
-
-        >>> from detecto.core import Dataset
-        >>> from detecto.utils import default_transforms
-
-        >>> # Note: if transform=None, the Dataset will automatically
-        >>> # apply these default transforms to images
-        >>> defaults = default_transforms()
-        >>> dataset = Dataset('labels.csv', 'images/', transform=defaults)
-    """
-    return transforms.Compose([transforms.ToTensor(), normalize_transform()])
-
-
 def normalize_transform():
     """Returns a torchvision `transforms.Normalize
     <https://pytorch.org/docs/stable/torchvision/transforms.html>`_ object
@@ -79,12 +80,13 @@ def normalize_transform():
     pre-trained models.
 
     :return: A transforms.Normalize object with pre-computed values.
-    :rtype: transforms.Normalize
+    :rtype: torchvision.transforms.Normalize
 
     **Example**::
 
         >>> from detecto.core import Dataset
         >>> from detecto.utils import normalize_transform
+        >>> from torchvision import transforms
 
         >>> # Note: if transform=None, the Dataset will automatically
         >>> # apply these default transforms to images
@@ -100,10 +102,57 @@ def normalize_transform():
 
 
 def read_image(path):
+    """Helper function that reads in an image as a
+    `NumPy <https://numpy.org/>`_ array. Equivalent to using
+    `scikit-image <https://scikit-image.org/>`_'s io.imread function.
+
+    :param path: The path to the image.
+    :type path: str
+    :return: Image in NumPy array format
+    :rtype: ndarray
+
+    **Example**::
+
+        >>> import matplotlib.pyplot as plt
+        >>> from detecto.utils import read_image
+
+        >>> image = read_image('image.jpg')
+        >>> plt.imshow(image)
+        >>> plt.show()
+    """
+
     return io.imread(path)
 
 
 def reverse_normalize(image):
+    """Reverses the normalization applied on an image by the
+    :func:`detecto.utils.reverse_normalize` transformation. The image
+    must be a `torch.Tensor <https://pytorch.org/docs/stable/tensors.html>`_
+    object.
+
+    :param image: A normalized image.
+    :type image: torch.Tensor
+    :return: The image with the normalization undone.
+    :rtype: torch.Tensor
+
+
+    **Example**::
+
+        >>> import matplotlib.pyplot as plt
+        >>> from torchvision import transforms
+        >>> from detecto.utils import read_image, \\
+        >>>     default_transforms, reverse_normalize
+
+        >>> image = read_image('image.jpg')
+        >>> defaults = default_transforms()
+        >>> image = defaults(image)
+
+        >>> image = reverse_normalize(image)
+        >>> image = transforms.ToPILImage()(image)
+        >>> plt.imshow(image)
+        >>> plt.show()
+    """
+
     reverse = transforms.Normalize(mean=[-0.485 / 0.229, -0.456 / 0.224, -0.406 / 0.255],
                                    std=[1 / 0.229, 1 / 0.224, 1 / 0.255])
     return reverse(image)
