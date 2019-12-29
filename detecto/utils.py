@@ -1,6 +1,5 @@
 import pandas as pd
 from skimage import io
-import torch
 import xml.etree.ElementTree as ET
 
 from torchvision import transforms
@@ -10,8 +9,8 @@ from glob import glob
 def filter_top_predictions(labels, boxes, scores):
     """Filters out the top scoring predictions of each class from the
     given data. Note: passing the predictions from
-    :meth:`detecto.Model.predict` to this function produces the same
-    results as a direct call to :meth:`detecto.Model.predict_top`.
+    :meth:`detecto.core.Model.predict` to this function produces the same
+    results as a direct call to :meth:`detecto.core.Model.predict_top`.
 
     :param labels: A list containing the string labels.
     :type labels: list
@@ -29,7 +28,7 @@ def filter_top_predictions(labels, boxes, scores):
 
         >>> from detecto.core import Model
         >>> from detecto.utils import read_image, filter_top_predictions
-        >>>
+
         >>> model = Model.load('model_weights.pth', ['label1', 'label2'])
         >>> image = read_image('image.jpg')
         >>> labels, boxes, scores = model.predict(image)
@@ -50,10 +49,52 @@ def filter_top_predictions(labels, boxes, scores):
 
 
 def default_transforms():
+    """Returns the default, bare-minimum transformations that should be
+    applied to images passed to classes in the :mod:`detecto.core` module.
+
+    :return: A torchvision `transforms.Compose
+        <https://pytorch.org/docs/stable/torchvision/transforms.html>`_
+        object containing a transforms.ToTensor object and the
+        transforms.Normalize object returned by
+        :func:`detecto.utils.normalize_transform`.
+    :rtype: torchvision.transforms.Compose
+
+    **Example**::
+
+        >>> from detecto.core import Dataset
+        >>> from detecto.utils import default_transforms
+
+        >>> # Note: if transform=None, the Dataset will automatically
+        >>> # apply these default transforms to images
+        >>> defaults = default_transforms()
+        >>> dataset = Dataset('labels.csv', 'images/', transform=defaults)
+    """
     return transforms.Compose([transforms.ToTensor(), normalize_transform()])
 
 
 def normalize_transform():
+    """Returns a torchvision `transforms.Normalize
+    <https://pytorch.org/docs/stable/torchvision/transforms.html>`_ object
+    with default mean and standard deviation values as required by PyTorch's
+    pre-trained models.
+
+    :return: A transforms.Normalize object with pre-computed values.
+    :rtype: transforms.Normalize
+
+    **Example**::
+
+        >>> from detecto.core import Dataset
+        >>> from detecto.utils import normalize_transform
+
+        >>> # Note: if transform=None, the Dataset will automatically
+        >>> # apply these default transforms to images
+        >>> defaults = transforms.Compose([
+        >>>     transforms.ToTensor(),
+        >>>     normalize_transform(),
+        >>> ])
+        >>> dataset = Dataset('labels.csv', 'images/', transform=defaults)
+    """
+
     # Default for PyTorch's pre-trained models
     return transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 

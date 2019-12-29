@@ -37,7 +37,7 @@ print(img.min(), img.max())
 xml_to_csv('xml_labels', 'labels.csv')
 
 
-dataset = Dataset('labels.csv', 'images', transform=transform_img)
+dataset = Dataset('labels.csv', 'images/', transform=transform_img)
 image, target = dataset[0]
 # Shows image shape, bounds of the box, and the label for the item in the box
 print(image.shape, target['boxes'], target['labels'])

@@ -119,6 +119,7 @@ def test_model_fit():
 
 # Test both the predict and predict_top methods with both single
 # images and lists of images to predict on
+# TODO: test applying transforms on images to predict
 def test_model_predict():
     classes = ['start_tick', 'start_gate']
     path = os.path.dirname(__file__)
