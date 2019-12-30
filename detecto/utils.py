@@ -158,9 +158,30 @@ def reverse_normalize(image):
     return reverse(image)
 
 
-def xml_to_csv(path, output_path):
+def xml_to_csv(xml_folder, output_file):
+    """Converts a folder of XML label files into a single CSV file, which
+    can then be used to create a :class:`detecto.core.Dataset` object. Each
+    XML file should correspond to an image and contain the image name, image
+    size, and the names and bounding boxes of the objects in the image,
+    if any. Extraneous data in the XML files will simply be ignored.
+    See :download:`here <_static/example.xml>` for an example XML file.
+    For an image labeling tool that produces XML files in this format,
+    see `LabelImg <https://github.com/tzutalin/labelImg>`_.
+
+    :param xml_folder: The path to the folder containing the XML files.
+    :type xml_folder: str
+    :param output_file: The name of the output CSV file.
+    :type output_file: str
+
+    **Example**::
+
+        >>> from detecto.utils import xml_to_csv
+
+        >>> xml_to_csv('xml_labels/', 'labels.csv')
+    """
+
     xml_list = []
-    for xml_file in glob(path + '/*.xml'):
+    for xml_file in glob(xml_folder + '/*.xml'):
         tree = ET.parse(xml_file)
         root = tree.getroot()
 
@@ -177,7 +198,7 @@ def xml_to_csv(path, output_path):
 
     column_names = ['filename', 'width', 'height', 'class', 'xmin', 'ymin', 'xmax', 'ymax']
     xml_df = pd.DataFrame(xml_list, columns=column_names)
-    xml_df.to_csv(output_path, index=None)
+    xml_df.to_csv(output_file, index=None)
 
 
 def _is_iterable(variable):

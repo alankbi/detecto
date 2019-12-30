@@ -1,0 +1,36 @@
+<annotation>
+    <folder>train_images</folder>
+    <filename>image156.jpg</filename>
+    <size>
+        <width>1720</width>
+        <height>1080</height>
+        <depth>3</depth>
+    </size>
+    <segmented>0</segmented>
+    <object>
+        <name>dog</name>
+        <pose>Unspecified</pose>
+        <truncated>0</truncated>
+        <occluded>0</occluded>
+        <difficult>0</difficult>
+        <bndbox>
+            <xmin>884</xmin>
+            <ymin>387</ymin>
+            <xmax>937</xmax>
+            <ymax>784</ymax>
+        </bndbox>
+    </object>
+    <object>
+        <name>cat</name>
+        <pose>Unspecified</pose>
+        <truncated>0</truncated>
+        <occluded>0</occluded>
+        <difficult>0</difficult>
+        <bndbox>
+            <xmin>1</xmin>
+            <ymin>410</ymin>
+            <xmax>1657</xmax>
+            <ymax>1079</ymax>
+        </bndbox>
+    </object>
+</annotation>

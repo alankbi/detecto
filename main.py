@@ -34,7 +34,7 @@ img = transform_img(image)
 print(img.shape)
 print(img.min(), img.max())
 
-xml_to_csv('xml_labels', 'labels.csv')
+xml_to_csv('xml_labels/', 'labels.csv')
 
 
 dataset = Dataset('labels.csv', 'images/', transform=transform_img)
