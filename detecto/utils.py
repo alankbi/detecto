@@ -186,8 +186,9 @@ def xml_to_csv(xml_folder, output_file):
         root = tree.getroot()
 
         filename = root.find('filename').text
-        width = int(root.find('size')[0].text)
-        height = int(root.find('size')[1].text)
+        size = root.find('size')
+        width = int(size.find('width').text)
+        height = int(size.find('height').text)
 
         for member in root.findall('object'):
             box = member.find('bndbox')
