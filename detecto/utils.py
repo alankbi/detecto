@@ -181,6 +181,7 @@ def xml_to_csv(xml_folder, output_file):
     """
 
     xml_list = []
+    # Loop through every XML file
     for xml_file in glob(xml_folder + '/*.xml'):
         tree = ET.parse(xml_file)
         root = tree.getroot()
@@ -190,17 +191,22 @@ def xml_to_csv(xml_folder, output_file):
         width = int(size.find('width').text)
         height = int(size.find('height').text)
 
+        # Each object represents each actual image label
         for member in root.findall('object'):
             box = member.find('bndbox')
             label = member.find('name').text
+
+            # Add image file name, image size, label, and box coordinates to CSV file
             row = (filename, width, height, label, int(box[0].text),
                    int(box[1].text), int(box[2].text), int(box[3].text))
             xml_list.append(row)
 
+    # Save as a CSV file
     column_names = ['filename', 'width', 'height', 'class', 'xmin', 'ymin', 'xmax', 'ymax']
     xml_df = pd.DataFrame(xml_list, columns=column_names)
     xml_df.to_csv(output_file, index=None)
 
 
+# Checks whether a variable is a list or tuple only
 def _is_iterable(variable):
     return isinstance(variable, list) or isinstance(variable, tuple)
