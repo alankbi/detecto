@@ -260,7 +260,7 @@ class Model:
             images have not already been transformed into torch.Tensor
             objects, the default transformations contained in
             :func:`detecto.utils.default_transforms` will be applied.
-        :type images: numpy.ndarray or torch.Tensor
+        :type images: list or numpy.ndarray or torch.Tensor
         :return: If given a single image, returns a tuple of size
             three. The first element is a list of string labels of size N,
             the number of detected objects. The second element is a
@@ -302,17 +302,30 @@ class Model:
         return results[0] if is_single_image else results
 
     def predict_top(self, images):
-        """temp
+        """Takes in an image or list of images and returns the top
+        scoring predictions for each detected label in each image.
+        Equivalent to running :meth:`detecto.core.Model.predict` and
+        then :func:`detecto.utils.filter_top_predictions` together.
 
-        :param images:
-        :type images:
-        :return:
-        :rtype:
+        :param images: An image or list of images to predict on. If the
+            images have not already been transformed into torch.Tensor
+            objects, the default transformations contained in
+            :func:`detecto.utils.default_transforms` will be applied.
+        :type images: list or numpy.ndarray or torch.Tensor
+        :return: If given a single image, returns a list of tuples, where
+            each tuple is the top-scoring prediction for each unique object
+            label detected in the image. The tuples contain three elements:
+            the label, box, and score. The return data is in the exact same
+            format as that of :func:`detecto.utils.filter_top_predictions`.
+            If given a list of images, returns a list of the lists of
+            tuples described above, each list of tuples corresponding to a
+            single image.
+        :rtype: list of tuple or list of list of tuple
         """
 
         predictions = self.predict(images)
 
-        # If tuple but not list, then it's from a single image
+        # If tuple but not list, then images is a single image
         if not isinstance(predictions, list):
             return filter_top_predictions(*predictions)
 
@@ -323,29 +336,57 @@ class Model:
         return results
 
     def fit(self, data_loader, val_loader=None, epochs=10, learning_rate=0.005, momentum=0.9,
-            weight_decay=0.0005, lr_step_size=3, gamma=0.1, verbose=False):
-        """temp
+            weight_decay=0.0005, gamma=0.1, lr_step_size=3, verbose=False):
+        """Train the model on the given :class:`detecto.core.DataLoader`.
+        If given a DataLoader containing a validation dataset, returns a
+        list of loss scores at each epoch.
 
-        :param data_loader:
-        :type data_loader:
-        :param val_loader:
-        :type val_loader:
-        :param epochs:
-        :type epochs:
-        :param learning_rate:
-        :type learning_rate:
-        :param momentum:
-        :type momentum:
-        :param weight_decay:
-        :type weight_decay:
-        :param lr_step_size:
-        :type lr_step_size:
-        :param gamma:
-        :type gamma:
-        :param verbose:
-        :type verbose:
-        :return:
-        :rtype:
+        :param data_loader: A DataLoader containing the dataset to train on.
+        :type data_loader: detecto.core.DataLoader
+        :param val_loader: (Optional) A DataLoader containing the dataset
+            to validate on. Defaults to None, in which case no validation
+            occurs.
+        :type val_loader: detecto.core.DataLoader
+        :param epochs: (Optional) The number of runs over the data in
+            ``data_loader`` to train for. Defaults to 10.
+        :type epochs: int
+        :param learning_rate: (Optional) How fast to update the model
+            weights at each step of training. Defaults to 0.005.
+        :type learning_rate: float
+        :param momentum: (Optional) The momentum used to reduce the
+            fluctuations of gradients at each step. Defaults to 0.9.
+        :type momentum: float
+        :param weight_decay: (Optional) The amount of L2 regularization
+            to apply on model parameters. Defaults to 0.0005.
+        :type weight_decay: float
+        :param gamma: (Optional) The decay factor that ``learning_rate``
+            is multiplied by every ``lr_step_size`` epochs. Defaults to 0.1.
+        :type gamma: float
+        :param lr_step_size: (Optional) The number of epochs between each
+            decay of ``learning_rate`` by ``gamma``. Defaults to 3.
+        :type lr_step_size: int
+        :param verbose: (Optional) Whether to print the current epoch and
+             loss (if given a validation dataset) at each step. Defaults
+             to False.
+        :type verbose: bool
+        :return: If ``val_loader`` is not None and epochs is greater than 0,
+            returns a list of the validation losses at each epoch. Otherwise,
+            returns nothing.
+        :rtype: list or None
+
+        **Example**::
+
+            >>> from detecto.core import Model, Dataset, DataLoader
+
+            >>> dataset = Dataset('train_labels.csv', 'train_images/')
+            >>> loader = DataLoader(dataset, batch_size=2, shuffle=True)
+            >>> val_dataset = Dataset('val_labels.csv', 'val_images/')
+            >>> val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
+            >>> model = Model(['rose', 'tulip'])
+            >>> losses = model.fit(loader, val_loader, epochs=5)
+            >>> losses
+            [0.11191498369799327, 0.09899920264606253, 0.08454859235434461,
+                0.06825731012780788, 0.06236840748117637]
         """
 
         losses = []
@@ -353,7 +394,7 @@ class Model:
         parameters = [p for p in self._model.parameters() if p.requires_grad]
         # Create an optimizer that uses SGD (stochastic gradient descent) to train the parameters
         optimizer = torch.optim.SGD(parameters, lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
-        # Create a learning rate scheduler that decreases learning rate by gamma every step_size epochs
+        # Create a learning rate scheduler that decreases learning rate by gamma every lr_step_size epochs
         lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=lr_step_size, gamma=gamma)
 
         # Train on the entire dataset for the specified number of times (epochs)
@@ -403,35 +444,60 @@ class Model:
             return losses
 
     def get_internal_model(self):
-        """temp
+        """Returns the internal torchvision model that this class contains
+        to allow for more advanced fine-tuning and the full use of
+        features presented in the PyTorch library.
 
-        :return:
-        :rtype:
+        :return: The torchvision model, which is a Faster R-CNN ResNet-50
+            FPN with a FastRCNNPredictor box predictor.
+        :rtype: torchvision.models.detection.faster_rcnn.FasterRCNN
+
+        **Example**::
+
+            >>> from detecto.core import Model
+
+            >>> model = Model.load('model_weights.pth', ['tick', 'gate'])
+            >>> torch_model = model.get_internal_model()
+            >>> type(torch_model)
+            <class 'torchvision.models.detection.faster_rcnn.FasterRCNN'>
         """
 
         return self._model
 
-    def save(self, path):
-        """temp
+    def save(self, file):
+        """Saves the internal model weights to a file.
 
-        :param path:
-        :type path:
-        :return:
-        :rtype:
+        :param file: The name of the file. Should have a .pth file extension.
+        :type file: str
+
+        **Example**::
+
+            >>> from detecto.core import Model
+
+            >>> model = Model(['tree', 'bush', 'leaf'])
+            >>> model.save('model_weights.pth')
         """
 
-        torch.save(self._model.state_dict(), path)
+        torch.save(self._model.state_dict(), file)
 
     @staticmethod
     def load(file, classes):
-        """temp
+        """Loads a model from a .pth file containing the model weights.
 
-        :param file:
-        :type file:
-        :param classes:
-        :type classes:
-        :return:
-        :rtype:
+        :param file: The path to the .pth file containing the saved model.
+        :type file: str
+        :param classes: The list of classes/labels this model was trained
+            to predict. Must be in the same order as initially passed to
+            :meth:`detecto.core.Model.__init__` for accurate results.
+        :type classes: list
+        :return: The model loaded from the file.
+        :rtype: detecto.core.Model
+
+        **Example**::
+
+            >>> from detecto.core import Model
+
+            >>> model = Model.load('model_weights.pth', ['ant', 'bee'])
         """
 
         model = Model(classes)

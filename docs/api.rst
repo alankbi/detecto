@@ -7,6 +7,10 @@ API Documentation
    :members:
    :special-members:
 
+.. autoclass:: detecto.core.Model
+   :members:
+   :special-members: __init__
+
 .. automodule:: detecto.utils
    :members:
 
