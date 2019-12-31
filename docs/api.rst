@@ -5,6 +5,7 @@ API Documentation
 
 .. automodule:: detecto.core
    :members:
+   :special-members:
 
 .. automodule:: detecto.utils
    :members:

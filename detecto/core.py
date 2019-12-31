@@ -12,9 +12,43 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
 
 class DataLoader(torch.utils.data.DataLoader):
+
     def __init__(self, dataset, **kwargs):
+        """Accepts a :class:`detecto.core.Dataset` object and creates
+        an iterable over the data, which can then be fed into a
+        :class:`detecto.core.Model` for training and validation.
+        Extends PyTorch's `DataLoader
+        <https://pytorch.org/docs/stable/data.html>`_ class with a custom
+        ``collate_fn`` function.
+
+        :param dataset: The dataset for iteration over.
+        :type dataset: detecto.core.Dataset
+        :param kwargs: (Optional) Additional arguments to customize the
+            DataLoader, such as ``batch_size`` or ``shuffle``. See `docs
+            <https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader>`_
+            for more details.
+        :type kwargs: Any
+
+        **Example**::
+
+            >>> from detecto.core import Dataset, DataLoader
+
+            >>> dataset = Dataset('labels.csv', 'images/')
+            >>> loader = DataLoader(dataset, batch_size=2, shuffle=True)
+            >>> for images, targets in loader:
+            >>>     print(images[0].shape)
+            >>>     print(targets[0])
+            torch.Size([3, 1080, 1720])
+            {'boxes': tensor([[884, 387, 937, 784]]), 'labels': 'person'}
+            torch.Size([3, 1080, 1720])
+            {'boxes': tensor([[   1,  410, 1657, 1079]]), 'labels': 'car'}
+            ...
+        """
+
         super().__init__(dataset, collate_fn=DataLoader.collate_data, **kwargs)
 
+    # Converts a list of tuples into a tuple of lists so that
+    # it can properly be fed to the model for training
     @staticmethod
     def collate_data(batch):
         images, targets = zip(*batch)
@@ -23,14 +57,62 @@ class DataLoader(torch.utils.data.DataLoader):
 
 class Dataset(torch.utils.data.Dataset):
 
-    # csv_file: Path to the csv file with annotations.
-    # root_dir: Path to the directory with all the images.
-    # transform: Optional transform to be applied on a sample.
-    def __init__(self, csv_file, root_dir, transform=None):
+    def __init__(self, csv_file, image_folder, transform=None):
+        """Takes in a CSV file containing label data and the path to the
+        corresponding folder of images and creates an indexable dataset
+        over all of the data. Applies optional transforms over the data.
+
+        :param csv_file: Path to the CSV file containing the label data.
+            The file should have the following columns in order:
+            ``filename``, ``width``, ``height``, ``class``, ``xmin``,
+            ``ymin``, ``xmax``, and ``ymax``. See
+            :func:`detecto.utils.xml_to_csv` to generate CSV files in this
+            format from XML label files.
+        :type csv_file: str
+        :param image_folder: The path to the folder containing images. Each
+            row of the CSV file contains a ``filename`` which should
+            correspond to an image in this folder.
+        :type image_folder: str
+        :param transform: (Optional) A torchvision `transforms.Compose
+            <https://pytorch.org/docs/stable/torchvision/transforms.html#torchvision.transforms.Compose>`__
+            object containing transformations to apply on all elements in
+            the dataset. See `PyTorch docs
+            <https://pytorch.org/docs/stable/torchvision/transforms.html>`_
+            for a list of possible transforms. When using transforms.Resize
+            and transforms.RandomHorizontalFlip, all box coordinates are
+            automatically adjusted to match the modified image. If None,
+            defaults to the transforms returned by
+            :func:`detecto.utils.default_transforms`.
+        :type transform: torchvision.transforms.Compose or None
+
+        **Indexing**:
+
+        A Dataset object can be indexed like any other Python iterable.
+        Doing so returns a tuple of length 2. The first element is the
+        image and the second element is a dict containing a 'boxes' and
+        'labels' key. ``dict['boxes']`` is a torch.Tensor of size
+        ``(1, 4)`` containing ``xmin``, ``ymin``, ``xmax``, and ``ymax``
+        of the box and ``dict['labels']`` is the string label of the
+        detected object.
+
+        **Example**::
+
+            >>> from detecto.core import Dataset
+
+            >>> dataset = Dataset('labels.csv', 'images/')
+            >>> print(len(dataset))
+            >>> image, target = dataset[0]
+            >>> print(image.shape)
+            >>> print(target)
+            4
+            torch.Size([3, 720, 1280])
+            {'boxes': tensor([[564, 43, 736, 349]]), 'labels': 'balloon'}
+        """
+
         # CSV file contains: filename, width, height, class, xmin, ymin, xmax, ymax
         self._csv = pd.read_csv(csv_file)
 
-        self._root_dir = root_dir
+        self._root_dir = image_folder
 
         if transform is None:
             self.transform = default_transforms()
@@ -42,7 +124,7 @@ class Dataset(torch.utils.data.Dataset):
         return len(self._csv)
 
     # Is what allows you to index the dataset, e.g. dataset[0]
-    # dataset[index] returns a tuple containing the image and the targets list
+    # dataset[index] returns a tuple containing the image and the targets dict
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
@@ -55,17 +137,18 @@ class Dataset(torch.utils.data.Dataset):
         box = self._csv.iloc[idx, 4:]
         box = torch.tensor(box).view(1, 4)
 
-        # Read in the label: start_tick or start_gate
+        # Read in the label
         label = self._csv.iloc[idx, 3]
 
         targets = {'boxes': box, 'labels': label}
 
-        # Perform transformations such as normalization if provided
+        # Perform transformations
         if self.transform:
             width = self._csv.loc[idx, 'width']
             height = self._csv.loc[idx, 'height']
 
-            # We'll apply the transforms manually for more flexibility
+            # Apply the transforms manually to be able to deal with
+            # transforms like Resize or RandomHorizontalFlip
             updated_transforms = []
             scale_factor = 1.0
             random_flip = 0.0
@@ -105,7 +188,16 @@ class Dataset(torch.utils.data.Dataset):
 
 
 class Model:
+
     def __init__(self, classes, device=None):
+        """
+
+        :param classes:
+        :type classes:
+        :param device:
+        :type device:
+        """
+
         self._device = device if device else default_device
 
         # Load a model pre-trained on COCO
@@ -178,7 +270,6 @@ class Model:
 
     def fit(self, data_loader, val_loader=None, epochs=10, learning_rate=0.005, momentum=0.9,
             weight_decay=0.0005, lr_step_size=3, gamma=0.1, verbose=False):
-        # Set model to be in train mode (some models' internal behavior depends on it)
 
         losses = []
         # Get parameters that have grad turned on (i.e. parameters that should be trained)
