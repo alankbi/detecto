@@ -61,6 +61,8 @@ class Dataset(torch.utils.data.Dataset):
         """Takes in a CSV file containing label data and the path to the
         corresponding folder of images and creates an indexable dataset
         over all of the data. Applies optional transforms over the data.
+        Extends PyTorch's `Dataset
+        <https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset>`_.
 
         :param csv_file: Path to the CSV file containing the label data.
             The file should have the following columns in order:
@@ -190,12 +192,26 @@ class Dataset(torch.utils.data.Dataset):
 class Model:
 
     def __init__(self, classes, device=None):
-        """
+        """Initializes a machine learning model for object detection.
+        Models are built on top of PyTorch's `pre-trained models
+        <https://pytorch.org/docs/stable/torchvision/models.html>`_,
+        specifically the Faster R-CNN ResNet-50 FPN, but allow for
+        fine-tuning to predict on custom classes/labels.
 
-        :param classes:
-        :type classes:
-        :param device:
-        :type device:
+        :param classes: A list of classes/labels for the model to predict.
+        :type classes: list
+        :param device: (Optional) The device on which to run the model,
+            such as the CPU or GPU. See `here
+            <https://pytorch.org/docs/stable/tensor_attributes.html#torch-device>`_
+            for details on specifying the device. Defaults to the GPU if
+            available and the CPU if not.
+        :type device: torch.device or None
+
+        **Example**::
+
+            >>> from detecto.core import Model
+
+            >>> model = Model(['dog', 'cat', 'bunny'])
         """
 
         self._device = device if device else default_device
@@ -210,9 +226,11 @@ class Model:
 
         self._model.to(self._device)
 
+        # Mappings to convert from string labels to ints and vice versa
         self._classes = ['__background__'] + classes
         self._int_mapping = {label: index for index, label in enumerate(self._classes)}
 
+    # Returns the raw predictions from feeding an image or list of images into the model
     def _get_raw_predictions(self, images):
         self._model.eval()
 
@@ -226,23 +244,51 @@ class Model:
                 defaults = default_transforms()
                 images = [defaults(img) for img in images]
 
-            # Once again, send images to the GPU if it's available
+            # Send images to the specified device
             images = [img.to(self._device) for img in images]
 
             preds = self._model(images)
-            # Send predictions to CPU to save space on GPU
+            # Send predictions to CPU if not already
             preds = [{k: v.to(torch.device('cpu')) for k, v in p.items()} for p in preds]
             return preds
 
     def predict(self, images):
-        """
-        f
+        """Takes in an image or list of images and returns predictions
+        for object locations.
 
-        :param images: f
-        :type images: f
-        :return: f
-        :rtype: f
+        :param images: An image or list of images to predict on. If the
+            images have not already been transformed into torch.Tensor
+            objects, the default transformations contained in
+            :func:`detecto.utils.default_transforms` will be applied.
+        :type images: numpy.ndarray or torch.Tensor
+        :return: If given a single image, returns a tuple of size
+            three. The first element is a list of string labels of size N,
+            the number of detected objects. The second element is a
+            torch.Tensor of size (N, 4), giving the ``xmin``, ``ymin``,
+            ``xmax``, and ``ymax`` coordinates of the boxes around each
+            object. The third element is a torch.Tensor of size N containing
+            the scores of each predicted object (ranges from 0.0 to 1.0). If
+            given a list of images, returns a list of the tuples described
+            above, each tuple corresponding to a single image.
+        :rtype: tuple or list of tuple
+
+        **Example**::
+
+            >>> from detecto.core import Model
+            >>> from detecto.utils import read_image
+
+            >>> model = Model.load('model_weights.pth', ['horse', 'zebra'])
+            >>> image = read_image('image.jpg')
+            >>> labels, boxes, scores = model.predict(image)
+            >>> print(labels[0])
+            >>> print(boxes[0])
+            >>> print(scores[0])
+            horse
+            tensor([   0.0000,  428.0744, 1617.1860, 1076.3607])
+            tensor(0.9397)
         """
+
+        # Convert all to lists but keep track if a single image was given
         is_single_image = not _is_iterable(images)
         images = [images] if is_single_image else images
         preds = self._get_raw_predictions(images)
@@ -256,6 +302,14 @@ class Model:
         return results[0] if is_single_image else results
 
     def predict_top(self, images):
+        """temp
+
+        :param images:
+        :type images:
+        :return:
+        :rtype:
+        """
+
         predictions = self.predict(images)
 
         # If tuple but not list, then it's from a single image
@@ -270,6 +324,29 @@ class Model:
 
     def fit(self, data_loader, val_loader=None, epochs=10, learning_rate=0.005, momentum=0.9,
             weight_decay=0.0005, lr_step_size=3, gamma=0.1, verbose=False):
+        """temp
+
+        :param data_loader:
+        :type data_loader:
+        :param val_loader:
+        :type val_loader:
+        :param epochs:
+        :type epochs:
+        :param learning_rate:
+        :type learning_rate:
+        :param momentum:
+        :type momentum:
+        :param weight_decay:
+        :type weight_decay:
+        :param lr_step_size:
+        :type lr_step_size:
+        :param gamma:
+        :type gamma:
+        :param verbose:
+        :type verbose:
+        :return:
+        :rtype:
+        """
 
         losses = []
         # Get parameters that have grad turned on (i.e. parameters that should be trained)
@@ -326,22 +403,49 @@ class Model:
             return losses
 
     def get_internal_model(self):
+        """temp
+
+        :return:
+        :rtype:
+        """
+
         return self._model
 
     def save(self, path):
+        """temp
+
+        :param path:
+        :type path:
+        :return:
+        :rtype:
+        """
+
         torch.save(self._model.state_dict(), path)
 
     @staticmethod
     def load(file, classes):
+        """temp
+
+        :param file:
+        :type file:
+        :param classes:
+        :type classes:
+        :return:
+        :rtype:
+        """
+
         model = Model(classes)
         model._model.load_state_dict(torch.load(file, map_location=model._device))
         return model
 
+    # Converts all string labels in a list of target dicts to
+    # their corresponding int mappings
     def _convert_to_int_labels(self, targets):
         for target in targets:
             # Convert string labels to integer mapping
             target['labels'] = torch.tensor(self._int_mapping[target['labels']]).view(1)
 
+    # Sends all images and targets to the same device as the model
     def _to_device(self, images, targets):
         images = [image.to(self._device) for image in images]
         targets = [{k: v.to(self._device) for k, v in t.items()} for t in targets]
