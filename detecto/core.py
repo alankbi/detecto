@@ -400,7 +400,7 @@ class Model:
         # Train on the entire dataset for the specified number of times (epochs)
         for epoch in range(epochs):
             if verbose:
-                print('Epoch {}'.format(epoch + 1))
+                print('Epoch {} of {}'.format(epoch + 1, epochs))
 
             # Training step
             self._model.train()

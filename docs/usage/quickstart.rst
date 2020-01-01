@@ -71,17 +71,74 @@ separate folders::
 Code
 ----
 
-Here is some temporary code::
+First, check that you can read in and plot an image::
 
-   from detecto.core import Model, Dataset, DataLoader
-   from detecto.visualize import detect_video
+    import matplotlib.pyplot as plt
+    from detecto.utils import read_image
 
-   dataset = Dataset('labels.csv', 'images/')
-   loader = DataLoader(dataset, batch_size=2, shuffle=True)
+    image = read_image('path_to_image.jpg')
+    plt.imshow(image)
+    plt.show()
 
-   model = Model(['dog', 'cat', 'rabbit'])
-   model.fit(loader)
+Next, convert your XML label files into a CSV file and create a Dataset::
 
-   detect_video(model, 'input_video.mp4', 'output_video.avi')
+    from detecto.core import Dataset
+    from detecto.utils import xml_to_csv
 
-Here is some temporary text.
+    xml_to_csv('your_xml_folder', 'your_output_file.csv')
+    dataset = Dataset('your_output_file.csv', 'your_images/')
+
+Alternatively, apply some `custom transforms
+<https://pytorch.org/docs/stable/torchvision/transforms.html>`_ on your dataset
+for purposes such as data augmentation. If you choose to supply your own
+transforms, note that you must convert the images to torch.Tensors and normalize
+them at the very end::
+
+    from torchvision import transforms
+    from detecto.utils import normalize_transform
+
+    custom_transforms = transforms.Compose([
+        transforms.ToPILImage(),
+        # Note: all images with a size smaller than 800 will be scaled up in size
+        transforms.Resize(800),
+        transforms.RandomHorizontalFlip(0.5),
+        transforms.ColorJitter(saturation=0.2),
+        transforms.ToTensor(),  # required
+        normalize_transform(),  # required
+    ])
+    dataset = Dataset('your_output_file.csv', 'your_images/', transform=custom_transforms)
+
+Let's check to make sure it's working by plotting an image and box from the
+dataset. Since the dataset normalizes our images, reverse the normalization
+image before plotting::
+
+    from detecto.utils import reverse_normalize
+    from detecto.visualize import show_labeled_image
+
+    image, targets = dataset[0]
+    image = reverse_normalize(image)
+    show_labeled_image(image, targets['boxes'])
+
+Finally, let's train a model on our dataset::
+
+    from detecto.core import DataLoader, Model
+
+    # Specify all unique labels you're trying to predict
+    your_labels = ['label1', 'label2', '...']
+    model = Model(your_labels)
+
+    loader = DataLoader(dataset, batch_size=2, shuffle=True)
+    model.fit(loader, verbose=True)
+
+Optionally, supply a validation dataset to track accuracy throughout training
+and tweak some of the training options::
+
+    val_dataset = Dataset('your_val_labels.csv', 'your_val_images/')
+    val_loader = DataLoader(val_dataset)
+    losses = model.fit(loader, val_loader, epochs=15, learning_rate=0.01,
+                       gamma=0.2, lr_step_size=5, verbose=True)
+
+    plt.plot(losses)
+    plt.show()
+
+The model is finally ready for inference! 

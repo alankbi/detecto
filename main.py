@@ -21,7 +21,7 @@ plt.show()
 # Apply some preliminary transformations to the image we read in
 transform_img = transforms.Compose([
     transforms.ToPILImage(),
-    transforms.Resize(1800),  # Scale image height from 1080 to 216 for faster training
+    transforms.Resize(800),  # Scale image height from 1080 to 216 for faster training
     transforms.RandomHorizontalFlip(0.5),  # Randomly flip some images for data augmentation
     transforms.ColorJitter(saturation=0.5),  # Randomize saturation for image augmentation
     transforms.ToTensor(),
@@ -51,7 +51,7 @@ classes = ['start_gate', 'start_tick']
 
 model = Model(classes)
 model.predict(image)
-losses = model.fit(loader, val_loader, epochs=0, lr_step_size=2, verbose=True)
+losses = model.fit(loader, val_loader, epochs=1, lr_step_size=2, verbose=True)
 if losses is not None:
     plt.plot(losses)
     plt.show()
