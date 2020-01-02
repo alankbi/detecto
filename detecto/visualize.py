@@ -176,6 +176,7 @@ def plot_prediction_grid(model, images, dim=None, figsize=None):
 
                 ax.text(box[0] + 5, box[1] - 10, '{}: {}'
                         .format(label, round(score.item(), 2)), color='red')
+                ax.set_title('Image {}'.format(index))
 
     plt.show()
 

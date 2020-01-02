@@ -3,8 +3,8 @@
 API Documentation
 =================
 
-Core
-----
+detecto.core
+------------
 
 .. automodule:: detecto.core
    :members:
@@ -14,14 +14,14 @@ Core
    :members:
    :special-members: __init__
 
-Utils
------
+detecto.utils
+-------------
 
 .. automodule:: detecto.utils
    :members:
 
-Visualize
----------
+detecto.visualize
+-----------------
 
 .. automodule:: detecto.visualize
    :members:

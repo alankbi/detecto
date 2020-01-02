@@ -13,7 +13,7 @@ Technical Requirements
 
 By default, Detecto will run all heavy-duty code on the GPU if it's available
 and on the CPU otherwise. However, training and inference can take a long
-time without a GPU. Thus, if your computer doesn't have GPU you can use,
+time without a GPU. Thus, if your computer doesn't have a GPU you can use,
 consider using a service such as `Google Colab
 <https://colab.research.google.com/>`_, which comes with a free GPU.
 
@@ -23,7 +23,7 @@ Data Format
 Before starting, you should have a labeled dataset of images. The label data
 should be in individual XML files that each correspond to one image. To
 label your images and create these XML files, see `LabelImg
-<https://github.com/tzutalin/labelImg>`_ a free and open source tool that
+<https://github.com/tzutalin/labelImg>`_, a free and open source tool that
 makes it easy to label your data and produces XML files in exactly the right
 format for Detecto. In the future, more formats for label data will be
 supported.
@@ -110,7 +110,7 @@ them at the very end::
 
 Let's check to make sure it's working by plotting an image and box from the
 dataset. Since the dataset normalizes our images, reverse the normalization
-image before plotting::
+on the image before plotting::
 
     from detecto.utils import reverse_normalize
     from detecto.visualize import show_labeled_image
@@ -119,7 +119,7 @@ image before plotting::
     image = reverse_normalize(image)
     show_labeled_image(image, targets['boxes'])
 
-Finally, let's train a model on our dataset::
+Now, let's train a model on our dataset::
 
     from detecto.core import DataLoader, Model
 
@@ -141,4 +141,29 @@ and tweak some of the training options::
     plt.plot(losses)
     plt.show()
 
-The model is finally ready for inference! 
+The model is finally ready for inference! You can pass in a single image or a
+list of images to the model's predict methods, and you can choose to receive
+all predictions or just the top ones per label::
+
+    image = read_image('path_to_image.jpg')
+    predictions = model.predict(image)
+
+    images = []
+    for i in range(4):
+        image, _ = val_dataset[i]
+        images.append(image)
+
+    top_predictions = model.predict_top(images)
+
+    print(predictions)
+    print(top_predictions)
+
+Lastly, we can plot a grid of predictions across several images or generate a
+video with real-time object detection::
+
+    from detecto.visualize import plot_prediction_grid, detect_video
+
+    plot_prediction_grid(model, images, dim=(2, 2), figsize=(8, 8))
+    detect_video(model, 'your_input_video.mp4', 'your_output_file.avi')
+
+For next steps, see the :ref:`Further Usage <further-usage>` tutorial.

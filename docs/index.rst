@@ -27,6 +27,7 @@ See the guides below to get started:
    :maxdepth: 2
 
    usage/quickstart
+   usage/further-usage
 
 
 API Documentation
