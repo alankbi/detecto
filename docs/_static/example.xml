@@ -1,14 +1,14 @@
 <annotation>
-    <folder>approach1_frames</folder>
-    <filename>image.jpg</filename>
+    <folder>train_images</folder>
+    <filename>image156.jpg</filename>
     <size>
-        <height>1080</height>
         <width>1720</width>
+        <height>1080</height>
         <depth>3</depth>
     </size>
     <segmented>0</segmented>
     <object>
-        <name>start_tick</name>
+        <name>dog</name>
         <pose>Unspecified</pose>
         <truncated>0</truncated>
         <occluded>0</occluded>
@@ -21,16 +21,16 @@
         </bndbox>
     </object>
     <object>
+        <name>cat</name>
         <pose>Unspecified</pose>
-        <name>start_gate</name>
         <truncated>0</truncated>
         <occluded>0</occluded>
+        <difficult>0</difficult>
         <bndbox>
             <xmin>1</xmin>
             <ymin>410</ymin>
             <xmax>1657</xmax>
             <ymax>1079</ymax>
         </bndbox>
-        <difficult>0</difficult>
     </object>
 </annotation>
