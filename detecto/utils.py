@@ -1,9 +1,10 @@
 import pandas as pd
-from skimage import io
-import xml.etree.ElementTree as ET
+import torch
 
-from torchvision import transforms
 from glob import glob
+from skimage import io
+from torchvision import transforms
+import xml.etree.ElementTree as ET
 
 
 def default_transforms():
@@ -64,13 +65,21 @@ def filter_top_predictions(labels, boxes, scores):
          969.5024]), tensor(0.9040))]
     """
 
-    preds = []
+    filtered_labels = []
+    filtered_boxes = []
+    filtered_scores = []
     # Loop through each unique label
     for label in set(labels):
         # Get first index of label, which is also its highest scoring occurrence
         index = labels.index(label)
-        preds.append((label, boxes[index], scores[index]))
-    return preds
+
+        filtered_labels.append(label)
+        filtered_boxes.append(boxes[index])
+        filtered_scores.append(scores[index])
+
+    if len(filtered_labels) == 0:
+        return filtered_labels, torch.empty(0, 4), torch.tensor(filtered_scores)
+    return filtered_labels, torch.stack(filtered_boxes), torch.tensor(filtered_scores)
 
 
 def normalize_transform():

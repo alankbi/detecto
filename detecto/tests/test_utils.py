@@ -11,21 +11,21 @@ from detecto.utils import _is_iterable
 def test_filter_top_predictions():
     labels = ['test1', 'test2', 'test1', 'test2', 'test2']
     boxes = torch.ones(5, 4)
-    scores = [5, 4, 3, 2, 1]
+    scores = torch.tensor([5., 4, 3, 2, 1])
     for i in range(5):
         boxes[i] *= i
 
     preds = filter_top_predictions(labels, boxes, scores)
 
-    assert len(preds) == 2
+    assert isinstance(preds, tuple) and len(preds) == 3
     # Correct labels
-    assert {preds[0][0], preds[1][0]} == {'test1', 'test2'}
+    assert len(preds[0]) == 2 and set(preds[0]) == {'test1', 'test2'}
 
     # Correct box coordinates
-    assert {preds[0][1][0].item(), preds[1][1][0].item()} == {0, 1}
+    assert {preds[1][0][0].item(), preds[1][1][0].item()} == {0, 1}
 
     # Correct scores
-    assert {preds[0][2], preds[1][2]} == {5, 4}
+    assert {preds[2][0].item(), preds[2][1].item()} == {5, 4}
 
 
 def test_default_transforms():

@@ -143,30 +143,22 @@ def test_model_predict():
     assert torch.all(preds[0][1] == pred[1])
     assert torch.all(preds[0][2] == pred[2])
 
+    # Test predict_top method on a single image
+    top_pred = model.predict_top(image)
+    assert isinstance(top_pred, tuple)
+    assert len(top_pred[0]) == 2
+    assert isinstance(top_pred[1], torch.Tensor)
+    assert top_pred[1].shape[0] == len(top_pred[0]) and top_pred[1].shape[1] == 4
+    assert top_pred[2][0] > 0.5
+
     # Test predict_top method on a list of images
     top_preds = model.predict_top([image])
     assert len(top_preds) == 1
-
-    top_pred = top_preds[0]
-    assert len(top_pred) == 2 and len(top_pred[0]) == 3
-    assert {top_pred[0][0], top_pred[1][0]} == {'start_tick', 'start_gate'}
-    assert isinstance(top_pred[0][1], torch.Tensor) and top_pred[0][1].shape[0] == 4
-    assert top_pred[0][2] == pred[2][0] or top_pred[1][2] == pred[2][0]
-
-    # Test predict_top method on a single image
-    top_pred = model.predict_top(image)
-    # Check that it matches the prediction from top_preds
-    # excluding the order of the two unique labels
-    if top_pred[0][0] == top_preds[0][0][0]:
-        assert torch.all(top_pred[0][1] == top_preds[0][0][1])
-        assert top_pred[0][2] == top_preds[0][0][2]
-        assert torch.all(top_pred[1][1] == top_preds[0][1][1])
-        assert top_pred[1][2] == top_preds[0][1][2]
-    else:
-        assert torch.all(top_pred[0][1] == top_preds[0][1][1])
-        assert top_pred[0][2] == top_preds[0][1][2]
-        assert torch.all(top_pred[1][1] == top_preds[0][0][1])
-        assert top_pred[1][2] == top_preds[0][0][2]
+    assert set(top_preds[0][0]) == set(top_pred[0])
+    assert torch.all(top_preds[0][1][0] == top_pred[1][0]) or \
+        torch.all(top_preds[0][1][0] == top_pred[1][1])
+    assert top_preds[0][2][0] == top_pred[2][0] or \
+        top_preds[0][2][0] == top_pred[2][1]
 
     # Test return values when no predictions are made
     model._model.forward = empty_predictor
@@ -174,8 +166,9 @@ def test_model_predict():
     assert len(preds) == 1
     assert preds[0][0] == [] and preds[0][1].nelement() == 0 and preds[0][2].nelement() == 0
 
-    top_preds = model.predict_top([image])
-    assert top_preds == [[]]
+    preds = model.predict_top([image])
+    assert len(preds) == 1
+    assert preds[0][0] == [] and preds[0][1].nelement() == 0 and preds[0][2].nelement() == 0
 
 
 # Test that save, load, and get_internal_model all work properly
