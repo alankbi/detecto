@@ -11,10 +11,12 @@ train your own object detection model and run your predictions on a video with
 less than ten lines of code::
 
    from detecto.core import Model, Dataset, DataLoader
+   from detecto.utils import xml_to_csv
    from detecto.visualize import detect_video
 
+   xml_to_csv('xml_labels/', 'labels.csv')
    dataset = Dataset('labels.csv', 'images/')
-   loader = DataLoader(dataset, batch_size=2, shuffle=True)
+   loader = DataLoader(dataset)
 
    model = Model(['dog', 'cat', 'rabbit'])
    model.fit(loader)
