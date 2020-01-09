@@ -44,11 +44,10 @@ def filter_top_predictions(labels, boxes, scores):
     :type boxes: torch.Tensor
     :param scores: A tensor containing the score for each prediction.
     :type scores: torch.Tensor
-    :return: Returns a list of size K, where K is the number of uniquely
-        predicted classes in ``labels``. Each element in the list is a tuple
-        containing the label, a tensor of size 4 containing the box
-        coordinates, and the score for that prediction.
-    :rtype: list of tuple
+    :return: Returns a tuple of the given labels, boxes, and scores, except
+        with only the top scoring prediction of each unique label kept in;
+        all other predictions are filtered out.
+    :rtype: tuple
 
     **Example**::
 
@@ -60,9 +59,8 @@ def filter_top_predictions(labels, boxes, scores):
         >>> labels, boxes, scores = model.predict(image)
         >>> top_preds = filter_top_predictions(labels, boxes, scores)
         >>> top_preds
-        [('label2', tensor([859.4128, 415.1042, 904.5725, 659.7365]),
-        tensor(0.8788)), ('label1', tensor([ 281.3972,  463.2599, 1303.1023,
-         969.5024]), tensor(0.9040))]
+        (['label2', 'label1'], tensor([[   0.0000,  428.0744, 1617.1860, 1076.3607],
+        [ 875.3470,  412.1762,  949.5915,  793.3424]]), tensor([0.9397, 0.8686]))
     """
 
     filtered_labels = []

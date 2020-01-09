@@ -312,15 +312,30 @@ class Model:
             objects, the default transformations contained in
             :func:`detecto.utils.default_transforms` will be applied.
         :type images: list or numpy.ndarray or torch.Tensor
-        :return: If given a single image, returns a list of tuples, where
-            each tuple is the top-scoring prediction for each unique object
-            label detected in the image. The tuples contain three elements:
-            the label, box, and score. The return data is in the exact same
-            format as that of :func:`detecto.utils.filter_top_predictions`.
-            If given a list of images, returns a list of the lists of
-            tuples described above, each list of tuples corresponding to a
-            single image.
-        :rtype: list of tuple or list of list of tuple
+        :return: If given a single image, returns a tuple of size
+            three. The first element is a list of string labels of size K,
+            the number of uniquely detected objects. The second element is
+            a torch.Tensor of size (K, 4), giving the ``xmin``, ``ymin``,
+            ``xmax``, and ``ymax`` coordinates of the top-scoring boxes
+            around each unique object. The third element is a torch.Tensor
+            of size K containing the scores of each uniquely predicted object
+            (ranges from 0.0 to 1.0). If given a list of images, returns a
+            list of the tuples described above, each tuple corresponding to
+            a single image.
+        :rtype: tuple or list of tuple
+
+
+        **Example**::
+
+            >>> from detecto.core import Model
+            >>> from detecto.utils import read_image
+
+            >>> model = Model.load('model_weights.pth', ['label1', 'label2'])
+            >>> image = read_image('image.jpg')
+            >>> top_preds = model.predict_top(image)
+            >>> top_preds
+            (['label2', 'label1'], tensor([[   0.0000,  428.0744, 1617.1860, 1076.3607],
+            [ 875.3470,  412.1762,  949.5915,  793.3424]]), tensor([0.9397, 0.8686]))
         """
 
         predictions = self.predict(images)
