@@ -1,9 +1,10 @@
 import pandas as pd
-from skimage import io
-import xml.etree.ElementTree as ET
+import torch
 
-from torchvision import transforms
 from glob import glob
+from skimage import io
+from torchvision import transforms
+import xml.etree.ElementTree as ET
 
 
 def default_transforms():
@@ -43,11 +44,10 @@ def filter_top_predictions(labels, boxes, scores):
     :type boxes: torch.Tensor
     :param scores: A tensor containing the score for each prediction.
     :type scores: torch.Tensor
-    :return: Returns a list of size K, where K is the number of uniquely
-        predicted classes in ``labels``. Each element in the list is a tuple
-        containing the label, a tensor of size 4 containing the box
-        coordinates, and the score for that prediction.
-    :rtype: list of tuple
+    :return: Returns a tuple of the given labels, boxes, and scores, except
+        with only the top scoring prediction of each unique label kept in;
+        all other predictions are filtered out.
+    :rtype: tuple
 
     **Example**::
 
@@ -59,18 +59,25 @@ def filter_top_predictions(labels, boxes, scores):
         >>> labels, boxes, scores = model.predict(image)
         >>> top_preds = filter_top_predictions(labels, boxes, scores)
         >>> top_preds
-        [('label2', tensor([859.4128, 415.1042, 904.5725, 659.7365]),
-        tensor(0.8788)), ('label1', tensor([ 281.3972,  463.2599, 1303.1023,
-         969.5024]), tensor(0.9040))]
+        (['label2', 'label1'], tensor([[   0.0000,  428.0744, 1617.1860, 1076.3607],
+        [ 875.3470,  412.1762,  949.5915,  793.3424]]), tensor([0.9397, 0.8686]))
     """
 
-    preds = []
+    filtered_labels = []
+    filtered_boxes = []
+    filtered_scores = []
     # Loop through each unique label
     for label in set(labels):
         # Get first index of label, which is also its highest scoring occurrence
         index = labels.index(label)
-        preds.append((label, boxes[index], scores[index]))
-    return preds
+
+        filtered_labels.append(label)
+        filtered_boxes.append(boxes[index])
+        filtered_scores.append(scores[index])
+
+    if len(filtered_labels) == 0:
+        return filtered_labels, torch.empty(0, 4), torch.tensor(filtered_scores)
+    return filtered_labels, torch.stack(filtered_boxes), torch.tensor(filtered_scores)
 
 
 def normalize_transform():

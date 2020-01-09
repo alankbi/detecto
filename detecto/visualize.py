@@ -71,7 +71,7 @@ def detect_video(model, input_file, output_file, fps=30):
         predictions = model.predict_top(transformed_frame)
 
         # Add the top prediction of each class to the frame
-        for label, box, score in predictions:
+        for label, box, score in zip(*predictions):
             # Since the predictions are for scaled down frames,
             # we need to increase the box dimensions
             box *= scale_down_factor
@@ -167,7 +167,7 @@ def plot_prediction_grid(model, images, dim=None, figsize=None):
             ax.imshow(image)
 
             # Plot boxes and labels
-            for label, box, score in preds:
+            for label, box, score in zip(*preds):
                 width, height = box[2] - box[0], box[3] - box[1]
                 initial_pos = (box[0], box[1])
                 rect = patches.Rectangle(initial_pos, width, height, linewidth=1,
