@@ -6,9 +6,9 @@
 Welcome to Detecto's documentation!
 ===================================
 
-Detecto is a simple, easy-to-use object detection package for Python. You can
-train your own object detection model and run your predictions on a video with
-less than ten lines of code::
+`Detecto <https://github.com/alankbi/detecto>`_ is a simple, easy-to-use object
+detection package for Python. You can train your own object detection model and
+run your predictions on a video with less than ten lines of code::
 
    from detecto.core import Model, Dataset, DataLoader
    from detecto.utils import xml_to_csv
