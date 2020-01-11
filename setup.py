@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="detecto",
-    version="1.0.1",
+    version="1.0.0",
     author="Alan Bi",
     author_email="alan.bi326@gmail.com",
     description="A Python package for quick and easy object detection",
@@ -20,6 +20,7 @@ setuptools.setup(
         'scikit-image',
         'torch',
         'torchvision',
+        'pillow==6.1.0',
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
