@@ -20,7 +20,7 @@ setuptools.setup(
         'scikit-image',
         'torch',
         'torchvision',
-        'pillow==6.1.0',
+        'pillow==6.2.0',
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
