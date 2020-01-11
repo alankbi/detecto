@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="detecto",
-    version="1.0.0",
+    version="1.0.1",
     author="Alan Bi",
     author_email="alan.bi326@gmail.com",
     description="A Python package for quick and easy object detection",
