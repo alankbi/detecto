@@ -39,9 +39,16 @@ Visit the [docs](https://detecto.readthedocs.io/) for a full guide, including a 
 
 ## Contributing
 
-All issues and pull requests are welcome! To run the code locally, first fork and then clone this repository. 
+All issues and pull requests are welcome! To run the code locally, first fork the repository and then run the following commands on your computer: 
 
-When adding code, be sure write unit tests and docstrings where necessary. 
+```bash
+git clone https://github.com/<your-username>/detecto.git
+cd detecto
+# Recommended to create a virtual environment before the next step
+pip3 install -r requirements.txt
+```
+
+When adding code, be sure to write unit tests and docstrings where necessary. 
 
 Tests are located in `detecto/tests` and can be run using pytest:
 
