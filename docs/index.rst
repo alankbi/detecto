@@ -23,7 +23,8 @@ run your predictions on a video with less than ten lines of code::
 
    detect_video(model, 'input_video.mp4', 'output_video.avi')
 
-See the guides below to get started:
+See the guides below to get started, or check out the `demo on Colab
+<https://colab.research.google.com/drive/1ISaTV5F-7b4i2QqtjTa7ToDPQ2k8qEe0>`_:
 
 .. toctree::
    :maxdepth: 2

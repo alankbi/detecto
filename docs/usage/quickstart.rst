@@ -17,16 +17,25 @@ time without a GPU. Thus, if your computer doesn't have a GPU you can use,
 consider using a service such as `Google Colab
 <https://colab.research.google.com/>`_, which comes with a free GPU.
 
+Check out the `demo on Colab
+<https://colab.research.google.com/drive/1ISaTV5F-7b4i2QqtjTa7ToDPQ2k8qEe0>`_
+to learn more about both Detecto and Colab!
+
 Data Format
 -----------
 
-Before starting, you should have a labeled dataset of images. The label data
-should be in individual XML files that each correspond to one image. To
-label your images and create these XML files, see `LabelImg
+Before starting, you should have a labeled dataset of images. If you don't
+have one, you can download a dataset of Chihuahuas and Golden Retrievers
+:download:`here <../_static/dog_dataset.zip>`. This dataset is a modified
+subset of the `Stanford Dogs Dataset
+<http://vision.stanford.edu/aditya86/ImageNetDogs/>`_.
+
+The label data should be in individual XML files that each correspond to
+one image. To label your images and create these XML files, see `LabelImg
 <https://github.com/tzutalin/labelImg>`_, a free and open source tool that
-makes it easy to label your data and produces XML files in exactly the right
-format for Detecto. In the future, more formats for label data will be
-supported.
+makes it easy to label your data and produces XML files in the PASCAL VOC
+format that Detecto uses. In the future, more formats for label data will
+be supported.
 
 Your data may look like the following::
 
@@ -80,7 +89,8 @@ First, check that you can read in and plot an image::
     plt.imshow(image)
     plt.show()
 
-Next, convert your XML label files into a CSV file and create a Dataset::
+Next, convert your XML label files into a CSV file. This allows us to create
+a Dataset of our images that we can index over, as you'll see later::
 
     from detecto.core import Dataset
     from detecto.utils import xml_to_csv
@@ -92,7 +102,9 @@ Alternatively, apply some `custom transforms
 <https://pytorch.org/docs/stable/torchvision/transforms.html>`_ on your dataset
 for purposes such as data augmentation. If you choose to supply your own
 transforms, note that you must convert the images to torch.Tensors and normalize
-them at the very end::
+them at the very end. In the below example, we define a torchvision Compose object
+that tells our dataset to convert images to PIL images, apply resize, flip, and
+saturation augmentations, and then finally convert back to normalized tensors::
 
     from torchvision import transforms
     from detecto.utils import normalize_transform
@@ -108,9 +120,10 @@ them at the very end::
     ])
     dataset = Dataset('your_output_file.csv', 'your_images/', transform=custom_transforms)
 
-Let's check to make sure it's working by plotting an image and box from the
-dataset. Since the dataset normalizes our images, reverse the normalization
-on the image before plotting::
+Let's check to make sure we have a working dataset; when we index it, we should
+receive a tuple of the image and a dict containing label and box data. Since
+the dataset normalizes our images, we should reverse the normalization on the
+returned image if we want to plot it::
 
     from detecto.utils import reverse_normalize
     from detecto.visualize import show_labeled_image
@@ -119,7 +132,11 @@ on the image before plotting::
     image = reverse_normalize(image)
     show_labeled_image(image, targets['boxes'])
 
-Now, let's train a model on our dataset::
+Now, let's train a model on our dataset. First, specify what classes you
+want to predict when initializing the Model. After that, we'll need
+to create a DataLoader over our dataset; because image datasets are typically
+very large, the model can only train on it in smaller batches. The DataLoader
+helps define how we batch and feed our images into the model for training::
 
     from detecto.core import DataLoader, Model
 
