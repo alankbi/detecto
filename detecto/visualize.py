@@ -184,7 +184,9 @@ def plot_prediction_grid(model, images, dim=None, figsize=None):
 def show_labeled_image(image, boxes):
     """Show the image along with the specified boxes around detected objects.
 
-    :param image: The image to plot.
+    :param image: The image to plot. If the image is a normalized
+        torch.Tensor object, it will automatically be reverse-normalized
+        and converted to a PIL image for plotting.
     :type image: numpy.ndarray or torch.Tensor
     :param boxes: A torch tensor of size (N, 4) where N is the number
         of boxes to plot, or simply size 4 if N is 1.
@@ -204,7 +206,9 @@ def show_labeled_image(image, boxes):
 
     fig, ax = plt.subplots(1)
     # If the image is already a tensor, convert it back to a PILImage
+    # and reverse normalize it
     if isinstance(image, torch.Tensor):
+        image = reverse_normalize(image)
         image = transforms.ToPILImage()(image)
     ax.imshow(image)
 
