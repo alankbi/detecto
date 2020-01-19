@@ -121,15 +121,14 @@ saturation augmentations, and then finally convert back to normalized tensors::
     dataset = Dataset('your_output_file.csv', 'your_images/', transform=custom_transforms)
 
 Let's check to make sure we have a working dataset; when we index it, we should
-receive a tuple of the image and a dict containing label and box data. Since
-the dataset normalizes our images, we should reverse the normalization on the
-returned image if we want to plot it::
+receive a tuple of the image and a dict containing label and box data. As the
+dataset normalizes our images, the :func:`detecto.visualize.show_labeled_image`
+automatically applies a reverse-normalization to restore it as close to the
+original as possible::
 
-    from detecto.utils import reverse_normalize
     from detecto.visualize import show_labeled_image
 
     image, targets = dataset[0]
-    image = reverse_normalize(image)
     show_labeled_image(image, targets['boxes'])
 
 Now, let's train a model on our dataset. First, specify what classes you
