@@ -12,6 +12,8 @@ Detecto is a Python package for quick and easy object detection. Below are just 
 
 Detecto is built on top of PyTorch, meaning models trained with Detecto can easily be extracted and used with PyTorch code. 
 
+![Video demo of Detecto](demo.gif)
+
 ## Usage and Docs
 
 To install Detecto using pip, run the following command:
