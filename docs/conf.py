@@ -20,9 +20,9 @@ sys.path.append('detecto')
 
 # -- Mock module dependencies ------------------------------------------------
 
-MOCK_MODULES = ['cv2', 'matplotlib', 'matplotlib.patches',
-                'matplotlib.pyplot', 'pandas', 'skimage',
-                'torch', 'torchvision', 'torchvision.transforms',
+MOCK_MODULES = ['cv2', 'matplotlib', 'matplotlib.patches', 'matplotlib.pyplot',
+                'pandas', 'skimage', 'torch', 'torch.utils',
+                'torch.utils.data', 'torchvision', 'torchvision.transforms',
                 'torchvision.models.detection.faster_rcnn']
 
 for mod_name in MOCK_MODULES:
