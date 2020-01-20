@@ -1,7 +1,9 @@
+![Detecto Logo](assets/logo_words.svg)
+--------------------------------------
+
 [![CircleCI](https://circleci.com/gh/alankbi/detecto/tree/master.svg?style=svg)](https://circleci.com/gh/alankbi/detecto/tree/master)
 [![Documentation Status](https://readthedocs.org/projects/detecto/badge/?version=latest)](https://detecto.readthedocs.io/en/latest/?badge=latest)
 
-# Detecto
 
 Detecto is a Python package for quick and easy object detection. Below are just a few of the features available:
 
@@ -12,7 +14,7 @@ Detecto is a Python package for quick and easy object detection. Below are just 
 
 Detecto is built on top of PyTorch, meaning models trained with Detecto can easily be extracted and used with PyTorch code. 
 
-![Video demo of Detecto](demo.gif)
+![Video demo of Detecto](assets/demo.gif)
 
 ## Usage and Docs
 
