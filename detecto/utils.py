@@ -171,7 +171,7 @@ def xml_to_csv(xml_folder, output_file):
     XML file should correspond to an image and contain the image name, image
     size, and the names and bounding boxes of the objects in the image,
     if any. Extraneous data in the XML files will simply be ignored.
-    See :download:`here <_static/example.xml>` for an example XML file.
+    See :download:`here <../_static/example.xml>` for an example XML file.
     For an image labeling tool that produces XML files in this format,
     see `LabelImg <https://github.com/tzutalin/labelImg>`_.
 
