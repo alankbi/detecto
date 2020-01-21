@@ -10,7 +10,6 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-import mock
 import os
 import sys
 
@@ -20,13 +19,11 @@ sys.path.append('detecto')
 
 # -- Mock module dependencies ------------------------------------------------
 
-MOCK_MODULES = ['cv2', 'matplotlib', 'matplotlib.patches', 'matplotlib.pyplot',
-                'pandas', 'skimage', 'torch', 'torch.utils',
-                'torch.utils.data', 'torchvision', 'torchvision.transforms',
-                'torchvision.models.detection.faster_rcnn']
-
-for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = mock.Mock()
+autodoc_mock_imports = ['cv2', 'matplotlib', 'matplotlib.patches',
+                        'matplotlib.pyplot', 'pandas', 'skimage', 'torch',
+                        'torch.utils', 'torch.utils.data', 'torchvision',
+                        'torchvision.transforms',
+                        'torchvision.models.detection.faster_rcnn']
 
 
 # -- Project information -----------------------------------------------------
