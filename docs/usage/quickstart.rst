@@ -6,7 +6,7 @@ Installation
 
 Detecto can be installed with pip::
 
-    pip install detecto
+    pip3 install detecto
 
 Technical Requirements
 ----------------------
