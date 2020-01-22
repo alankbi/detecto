@@ -20,7 +20,7 @@ Detecto is built on top of PyTorch, meaning models trained with Detecto can easi
 
 To install Detecto using pip, run the following command:
 
-`pip install detecto`
+`pip3 install detecto`
 
 After installing Detecto, you can train a machine learning model on a custom dataset and run object detection on a video with under ten lines of code:
 
@@ -58,7 +58,7 @@ When adding code, be sure to write unit tests and docstrings where necessary.
 
 Tests are located in `detecto/tests` and can be run using pytest:
 
-`python -m pytest`
+`python3 -m pytest`
 
 To generate the documentation locally, run the following commands:
 
