@@ -165,6 +165,35 @@ def reverse_normalize(image):
     return reverse(image)
 
 
+def split_video(video, output_folder, prefix='frame', step_size=1):
+    """Splits a video into individual frames and saves the images to the
+    specified folder.
+
+    :param video:
+    :type video:
+    :param output_folder:
+    :type output_folder:
+    :param prefix:
+    :type prefix:
+    :param step_size:
+    :type step_size:
+    :return:
+    :rtype:
+
+    **Example**::
+
+        >>> from detecto.utils import split_video
+
+        >>> split_video('video.mp4/', 'frames/', step_size=4)
+    """
+
+    if step_size <= 0:
+        print('Invalid step_size for split_video; defaulting to 1')
+        step_size = 1
+
+    # ------- Code -------
+
+
 def xml_to_csv(xml_folder, output_file):
     """Converts a folder of XML label files into a single CSV file, which
     can then be used to create a :class:`detecto.core.Dataset` object. Each
