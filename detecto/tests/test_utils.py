@@ -58,6 +58,21 @@ def test_read_image():
     assert (read_image(image_path) == image).all()
 
 
+def test_split_video():
+    path = os.path.dirname(__file__)
+    input_video = os.path.join(path, 'static/input_video.mp4')
+    output_path = os.path.join(path, 'static/split_frames')
+
+    split_video(input_video, output_path, prefix='testing', step_size=-1)
+
+    files = [f for f in os.listdir(output_path)]
+
+    assert len(files) == 1
+    assert files[0] == 'testing0.jpg'
+
+    os.remove(os.path.join(output_path, 'testing0.jpg'))
+
+
 def test_xml_to_csv():
     path = os.path.dirname(__file__)
     input_folder = os.path.join(path, 'static')

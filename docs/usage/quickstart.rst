@@ -28,7 +28,10 @@ Before starting, you should have a labeled dataset of images. If you don't
 have one, you can download a dataset of Chihuahuas and Golden Retrievers
 :download:`here <../_static/dog_dataset.zip>`. This dataset is a modified
 subset of the `Stanford Dogs Dataset
-<http://vision.stanford.edu/aditya86/ImageNetDogs/>`_.
+<http://vision.stanford.edu/aditya86/ImageNetDogs/>`_. If you have a video
+you'd like to use as training data, you can use
+:func:`detecto.utils.split_video` to split it into individual images that
+you can then label.
 
 The label data should be in individual XML files that each correspond to
 one image. To label your images and create these XML files, see `LabelImg
