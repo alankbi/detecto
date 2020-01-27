@@ -1,10 +1,12 @@
+import cv2
+import os
 import pandas as pd
 import torch
+import xml.etree.ElementTree as ET
 
 from glob import glob
 from skimage import io
 from torchvision import transforms
-import xml.etree.ElementTree as ET
 
 
 def default_transforms():
@@ -163,6 +165,57 @@ def reverse_normalize(image):
     reverse = transforms.Normalize(mean=[-0.485 / 0.229, -0.456 / 0.224, -0.406 / 0.255],
                                    std=[1 / 0.229, 1 / 0.224, 1 / 0.255])
     return reverse(image)
+
+
+def split_video(video_file, output_folder, prefix='frame', step_size=1):
+    """Splits a video into individual frames and saves the JPG images to the
+    specified output folder.
+
+    :param video_file: The path to the video file to split.
+    :type video_file: str
+    :param output_folder: The directory in which to save the frames.
+    :type output_folder: str
+    :param prefix: (Optional) The prefix to each frame's file name. For
+        example, if prefix == 'image', each frame will be saved as
+        image0.jpg, image1.jpg, etc. Defaults to 'frame'.
+    :type prefix: str
+    :param step_size: (Optional) How many frames to skip between each save.
+        For example, if step_size == 3, it will save every third frame.
+        Defaults to 1.
+    :type step_size: int
+
+    **Example**::
+
+        >>> from detecto.utils import split_video
+
+        >>> split_video('video.mp4/', 'frames/', step_size=4)
+    """
+
+    # Set step_size to minimum of 1
+    if step_size <= 0:
+        print('Invalid step_size for split_video; defaulting to 1')
+        step_size = 1
+
+    video = cv2.VideoCapture(video_file)
+
+    count = 0
+    index = 0
+    # Loop through video frame by frame
+    while True:
+        ret, frame = video.read()
+        if not ret:
+            break
+
+        # Save every step_size frames
+        if count % step_size == 0:
+            file_name = '{}{}.jpg'.format(prefix, index)
+            cv2.imwrite(os.path.join(output_folder, file_name), frame)
+            index += 1
+
+        count += 1
+
+    video.release()
+    cv2.destroyAllWindows()
 
 
 def xml_to_csv(xml_folder, output_file):
