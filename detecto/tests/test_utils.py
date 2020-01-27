@@ -63,6 +63,8 @@ def test_split_video():
     input_video = os.path.join(path, 'static/input_video.mp4')
     output_path = os.path.join(path, 'static/split_frames')
 
+    os.mkdir(output_path)
+
     split_video(input_video, output_path, prefix='testing', step_size=-1)
 
     files = [f for f in os.listdir(output_path)]
@@ -71,6 +73,7 @@ def test_split_video():
     assert files[0] == 'testing0.jpg'
 
     os.remove(os.path.join(output_path, 'testing0.jpg'))
+    os.rmdir(output_path)
 
 
 def test_xml_to_csv():
