@@ -5,7 +5,7 @@ import torch
 import torchvision
 
 from detecto.config import default_device
-from detecto.utils import default_transforms, filter_top_predictions, _is_iterable
+from detecto.utils import default_transforms, filter_top_predictions, xml_to_csv, _is_iterable
 from skimage import io
 from torchvision import transforms
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
@@ -57,23 +57,23 @@ class DataLoader(torch.utils.data.DataLoader):
 
 class Dataset(torch.utils.data.Dataset):
 
-    def __init__(self, csv_file, image_folder, transform=None):
+    def __init__(self, csv_file, image_folder=None, transform=None):
         """Takes in a CSV file containing label data and the path to the
         corresponding folder of images and creates an indexable dataset
         over all of the data. Applies optional transforms over the data.
         Extends PyTorch's `Dataset
-        <https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset>`_.
+        <https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset>`_. TODO
 
         :param csv_file: Path to the CSV file containing the label data.
             The file should have the following columns in order:
             ``filename``, ``width``, ``height``, ``class``, ``xmin``,
             ``ymin``, ``xmax``, and ``ymax``. See
             :func:`detecto.utils.xml_to_csv` to generate CSV files in this
-            format from XML label files.
-        :type csv_file: str
-        :param image_folder: The path to the folder containing images. Each
+            format from XML label files. TODO
+        :type csv_file: str TODO
+        :param image_folder: (Optional) The path to the folder containing images. Each
             row of the CSV file contains a ``filename`` which should
-            correspond to an image in this folder.
+            correspond to an image in this folder. TODO
         :type image_folder: str
         :param transform: (Optional) A torchvision `transforms.Compose
             <https://pytorch.org/docs/stable/torchvision/transforms.html#torchvision.transforms.Compose>`__
@@ -101,7 +101,7 @@ class Dataset(torch.utils.data.Dataset):
 
             >>> from detecto.core import Dataset
 
-            >>> dataset = Dataset('labels.csv', 'images/')
+            >>> dataset = Dataset('labels.csv', 'images/') # TODO
             >>> print(len(dataset))
             >>> image, target = dataset[0]
             >>> print(image.shape)
@@ -112,9 +112,16 @@ class Dataset(torch.utils.data.Dataset):
         """
 
         # CSV file contains: filename, width, height, class, xmin, ymin, xmax, ymax
-        self._csv = pd.read_csv(csv_file)
+        if os.path.isfile(csv_file):
+            self._csv = pd.read_csv(csv_file)
+        else:
+            self._csv = xml_to_csv(csv_file)
 
-        self._root_dir = image_folder
+        # If image folder not given, set it to labels folder
+        if image_folder is None:
+            self._root_dir = csv_file
+        else:
+            self._root_dir = image_folder
 
         if transform is None:
             self.transform = default_transforms()
@@ -354,14 +361,14 @@ class Model:
             weight_decay=0.0005, gamma=0.1, lr_step_size=3, verbose=False):
         """Train the model on the given :class:`detecto.core.DataLoader`.
         If given a DataLoader containing a validation dataset, returns a
-        list of loss scores at each epoch.
+        list of loss scores at each epoch. TODO
 
-        :param data_loader: A DataLoader containing the dataset to train on.
+        :param data_loader: A DataLoader containing the dataset to train on. TODO
         :type data_loader: detecto.core.DataLoader
         :param val_loader: (Optional) A DataLoader containing the dataset
             to validate on. Defaults to None, in which case no validation
             occurs.
-        :type val_loader: detecto.core.DataLoader
+        :type val_loader: detecto.core.DataLoader TODO
         :param epochs: (Optional) The number of runs over the data in
             ``data_loader`` to train for. Defaults to 10.
         :type epochs: int
@@ -393,7 +400,7 @@ class Model:
 
             >>> from detecto.core import Model, Dataset, DataLoader
 
-            >>> dataset = Dataset('train_labels.csv', 'train_images/')
+            >>> dataset = Dataset('train_labels.csv', 'train_images/') # TODO
             >>> loader = DataLoader(dataset, batch_size=2, shuffle=True)
             >>> val_dataset = Dataset('val_labels.csv', 'val_images/')
             >>> val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
@@ -403,6 +410,13 @@ class Model:
             [0.11191498369799327, 0.09899920264606253, 0.08454859235434461,
                 0.06825731012780788, 0.06236840748117637]
         """
+
+        # Convert dataset to data loader if not already
+        if not isinstance(data_loader, DataLoader):
+            data_loader = DataLoader(data_loader, shuffle=True)
+
+        if val_loader is not None and not isinstance(val_loader, DataLoader):
+            val_loader = DataLoader(val_loader)
 
         losses = []
         # Get parameters that have grad turned on (i.e. parameters that should be trained)

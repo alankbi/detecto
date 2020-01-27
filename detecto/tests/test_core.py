@@ -31,6 +31,20 @@ def test_dataset():
     assert dataset[1][0].shape == (3, 108, 172)
     assert torch.all(dataset[1][1]['boxes'][0] == torch.tensor([6, 41, 171, 107]))
 
+    # Test works when given an XML folder
+    path = os.path.dirname(__file__)
+    input_folder = os.path.join(path, 'static')
+
+    dataset = Dataset(input_folder, input_folder)
+    assert len(dataset) == 2
+    assert dataset[0][0].shape == (3, 1080, 1720)
+    assert 'boxes' in dataset[0][1] and 'labels' in dataset[0][1]
+
+    dataset = Dataset(input_folder)
+    assert len(dataset) == 2
+    assert dataset[0][0].shape == (3, 1080, 1720)
+    assert 'boxes' in dataset[0][1] and 'labels' in dataset[0][1]
+
 
 # Ensure that the collate function of the DataLoader properly
 # converts a list of tuples into a tuple of lists
@@ -115,6 +129,13 @@ def test_model_fit():
     # Should not return anything if not validation losses are produced
     losses = model.fit(loader, loader, epochs=0)
     assert losses is None
+
+    # Works when given datasets
+    model = Model(['start_tick', 'start_gate'])
+    dataset = get_dataset()
+    losses = model.fit(dataset, val_loader=dataset, epochs=1)
+
+    assert len(losses) == 1
 
 
 # Test both the predict and predict_top methods with both single

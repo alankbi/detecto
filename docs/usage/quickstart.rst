@@ -92,6 +92,7 @@ First, check that you can read in and plot an image::
     plt.imshow(image)
     plt.show()
 
+#################### TODO ####################
 Next, convert your XML label files into a CSV file. This allows us to create
 a Dataset of our images that we can index over, as you'll see later::
 

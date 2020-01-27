@@ -218,7 +218,7 @@ def split_video(video_file, output_folder, prefix='frame', step_size=1):
     cv2.destroyAllWindows()
 
 
-def xml_to_csv(xml_folder, output_file):
+def xml_to_csv(xml_folder, output_file=None):
     """Converts a folder of XML label files into a single CSV file, which
     can then be used to create a :class:`detecto.core.Dataset` object. Each
     XML file should correspond to an image and contain the image name, image
@@ -226,18 +226,20 @@ def xml_to_csv(xml_folder, output_file):
     if any. Extraneous data in the XML files will simply be ignored.
     See :download:`here <../_static/example.xml>` for an example XML file.
     For an image labeling tool that produces XML files in this format,
-    see `LabelImg <https://github.com/tzutalin/labelImg>`_.
+    see `LabelImg <https://github.com/tzutalin/labelImg>`_. TODO
 
     :param xml_folder: The path to the folder containing the XML files.
     :type xml_folder: str
-    :param output_file: The name of the output CSV file.
-    :type output_file: str
+    :param output_file: (Optional) TODO
+    :type output_file: str or None
+    :return: TODO
+    :rtype: pandas.DataFrame
 
     **Example**::
 
         >>> from detecto.utils import xml_to_csv
 
-        >>> xml_to_csv('xml_labels/', 'labels.csv')
+        >>> xml_to_csv('xml_labels/', 'labels.csv') # TODO
     """
 
     xml_list = []
@@ -264,7 +266,11 @@ def xml_to_csv(xml_folder, output_file):
     # Save as a CSV file
     column_names = ['filename', 'width', 'height', 'class', 'xmin', 'ymin', 'xmax', 'ymax']
     xml_df = pd.DataFrame(xml_list, columns=column_names)
-    xml_df.to_csv(output_file, index=None)
+
+    if output_file is not None:
+        xml_df.to_csv(output_file, index=None)
+
+    return xml_df
 
 
 # Checks whether a variable is a list or tuple only

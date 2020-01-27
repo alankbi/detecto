@@ -81,18 +81,22 @@ def test_xml_to_csv():
     input_folder = os.path.join(path, 'static')
     output_path = os.path.join(path, 'static/labels.csv')
 
-    xml_to_csv(input_folder, output_path)
+    df = xml_to_csv(input_folder, output_path)
     csv = pd.read_csv(output_path)
 
     assert len(csv) == 2
+    assert len(df) == 2
     assert csv.loc[0, 'filename'] == 'image.jpg'
-    assert csv.loc[1, 'class'] == 'start_gate'
+    assert df.loc[1, 'class'] == 'start_gate'
     assert csv.loc[0, 'width'] == 1720
-    assert csv.loc[1, 'height'] == 1080
+    assert df.loc[1, 'height'] == 1080
     assert csv.loc[0, 'ymax'] == 784
-    assert csv.loc[1, 'xmin'] == 1
+    assert df.loc[1, 'xmin'] == 1
 
     os.remove(output_path)
+
+    xml_to_csv(input_folder)
+    assert not os.path.isfile(output_path)
 
 
 def test__is_iterable():
