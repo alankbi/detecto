@@ -120,7 +120,7 @@ def test_model_fit():
             initial_loss += total_loss.item()
     initial_loss /= len(loader.dataset)
 
-    losses = model.fit(loader, val_loader=loader, epochs=2)
+    losses = model.fit(loader, val_dataset=loader, epochs=2)
 
     # Average loss during training should be lower than initial loss
     assert len(losses) == 2
@@ -133,7 +133,7 @@ def test_model_fit():
     # Works when given datasets
     model = Model(['start_tick', 'start_gate'])
     dataset = get_dataset()
-    losses = model.fit(dataset, val_loader=dataset, epochs=1)
+    losses = model.fit(dataset, val_dataset=dataset, epochs=1)
 
     assert len(losses) == 1
 

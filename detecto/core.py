@@ -57,23 +57,24 @@ class DataLoader(torch.utils.data.DataLoader):
 
 class Dataset(torch.utils.data.Dataset):
 
-    def __init__(self, csv_file, image_folder=None, transform=None):
-        """Takes in a CSV file containing label data and the path to the
-        corresponding folder of images and creates an indexable dataset
-        over all of the data. Applies optional transforms over the data.
-        Extends PyTorch's `Dataset
-        <https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset>`_. TODO
+    def __init__(self, label_data, image_folder=None, transform=None):
+        """Takes in the path to the label data and images and creates
+        an indexable dataset over all of the data. Applies optional
+        transforms over the data. Extends PyTorch's `Dataset
+        <https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset>`_.
 
-        :param csv_file: Path to the CSV file containing the label data.
-            The file should have the following columns in order:
-            ``filename``, ``width``, ``height``, ``class``, ``xmin``,
+        :param label_data: Can either contain the path to a folder storing
+            the XML label files or a CSV file containing the label data.
+            If a CSV file, the file should have the following columns in
+            order: ``filename``, ``width``, ``height``, ``class``, ``xmin``,
             ``ymin``, ``xmax``, and ``ymax``. See
             :func:`detecto.utils.xml_to_csv` to generate CSV files in this
-            format from XML label files. TODO
-        :type csv_file: str TODO
-        :param image_folder: (Optional) The path to the folder containing images. Each
-            row of the CSV file contains a ``filename`` which should
-            correspond to an image in this folder. TODO
+            format from XML label files.
+        :type label_data: str
+        :param image_folder: (Optional) The path to the folder containing the
+            images. If not specified, it is assumed that the images and XML
+            files are in the same directory as given by `label_data`. Defaults
+            to None.
         :type image_folder: str
         :param transform: (Optional) A torchvision `transforms.Compose
             <https://pytorch.org/docs/stable/torchvision/transforms.html#torchvision.transforms.Compose>`__
@@ -101,7 +102,13 @@ class Dataset(torch.utils.data.Dataset):
 
             >>> from detecto.core import Dataset
 
-            >>> dataset = Dataset('labels.csv', 'images/') # TODO
+            >>> # Create dataset from separate XML and image folders
+            >>> dataset = Dataset('xml_labels/', 'images/')
+            >>> # Create dataset from a combined XML and image folder
+            >>> dataset1 = Dataset('images_and_labels/')
+            >>> # Create dataset from a CSV file and image folder
+            >>> dataset2 = Dataset('labels.csv', 'images/')
+
             >>> print(len(dataset))
             >>> image, target = dataset[0]
             >>> print(image.shape)
@@ -112,14 +119,14 @@ class Dataset(torch.utils.data.Dataset):
         """
 
         # CSV file contains: filename, width, height, class, xmin, ymin, xmax, ymax
-        if os.path.isfile(csv_file):
-            self._csv = pd.read_csv(csv_file)
+        if os.path.isfile(label_data):
+            self._csv = pd.read_csv(label_data)
         else:
-            self._csv = xml_to_csv(csv_file)
+            self._csv = xml_to_csv(label_data)
 
         # If image folder not given, set it to labels folder
         if image_folder is None:
-            self._root_dir = csv_file
+            self._root_dir = label_data
         else:
             self._root_dir = image_folder
 
@@ -357,20 +364,21 @@ class Model:
 
         return results
 
-    def fit(self, data_loader, val_loader=None, epochs=10, learning_rate=0.005, momentum=0.9,
+    def fit(self, dataset, val_dataset=None, epochs=10, learning_rate=0.005, momentum=0.9,
             weight_decay=0.0005, gamma=0.1, lr_step_size=3, verbose=False):
-        """Train the model on the given :class:`detecto.core.DataLoader`.
-        If given a DataLoader containing a validation dataset, returns a
-        list of loss scores at each epoch. TODO
+        """Train the model on the given dataset. If given a validation
+        dataset, returns a list of loss scores at each epoch.
 
-        :param data_loader: A DataLoader containing the dataset to train on. TODO
-        :type data_loader: detecto.core.DataLoader
-        :param val_loader: (Optional) A DataLoader containing the dataset
-            to validate on. Defaults to None, in which case no validation
-            occurs.
-        :type val_loader: detecto.core.DataLoader TODO
+        :param dataset: A Dataset or DataLoader containing the dataset
+            to train on. If given a Dataset, this method automatically
+            wraps it in a DataLoader with `shuffle` set to `True`.
+        :type dataset: detecto.core.Dataset or detecto.core.DataLoader
+        :param val_dataset: (Optional) A Dataset or DataLoader containing
+            the dataset to validate on. Defaults to None, in which case no
+            validation occurs.
+        :type val_dataset: detecto.core.Dataset or detecto.core.DataLoader
         :param epochs: (Optional) The number of runs over the data in
-            ``data_loader`` to train for. Defaults to 10.
+            ``dataset`` to train for. Defaults to 10.
         :type epochs: int
         :param learning_rate: (Optional) How fast to update the model
             weights at each step of training. Defaults to 0.005.
@@ -391,7 +399,7 @@ class Model:
              loss (if given a validation dataset) at each step. Defaults
              to False.
         :type verbose: bool
-        :return: If ``val_loader`` is not None and epochs is greater than 0,
+        :return: If ``val_dataset`` is not None and epochs is greater than 0,
             returns a list of the validation losses at each epoch. Otherwise,
             returns nothing.
         :rtype: list or None
@@ -400,23 +408,27 @@ class Model:
 
             >>> from detecto.core import Model, Dataset, DataLoader
 
-            >>> dataset = Dataset('train_labels.csv', 'train_images/') # TODO
-            >>> loader = DataLoader(dataset, batch_size=2, shuffle=True)
-            >>> val_dataset = Dataset('val_labels.csv', 'val_images/')
-            >>> val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
+            >>> dataset = Dataset('training_data/')
+            >>> val_dataset = Dataset('validation_data/')
             >>> model = Model(['rose', 'tulip'])
-            >>> losses = model.fit(loader, val_loader, epochs=5)
+
+            >>> losses = model.fit(dataset, val_dataset, epochs=5)
+
+            >>> # Alternatively, provide a custom DataLoader over your dataset
+            >>> loader = DataLoader(dataset, batch_size=2, shuffle=True)
+            >>> losses = model.fit(loader, val_dataset, epochs=5)
+
             >>> losses
             [0.11191498369799327, 0.09899920264606253, 0.08454859235434461,
                 0.06825731012780788, 0.06236840748117637]
         """
 
         # Convert dataset to data loader if not already
-        if not isinstance(data_loader, DataLoader):
-            data_loader = DataLoader(data_loader, shuffle=True)
+        if not isinstance(dataset, DataLoader):
+            dataset = DataLoader(dataset, shuffle=True)
 
-        if val_loader is not None and not isinstance(val_loader, DataLoader):
-            val_loader = DataLoader(val_loader)
+        if val_dataset is not None and not isinstance(val_dataset, DataLoader):
+            val_dataset = DataLoader(val_dataset)
 
         losses = []
         # Get parameters that have grad turned on (i.e. parameters that should be trained)
@@ -433,7 +445,7 @@ class Model:
 
             # Training step
             self._model.train()
-            for images, targets in data_loader:
+            for images, targets in dataset:
                 self._convert_to_int_labels(targets)
                 images, targets = self._to_device(images, targets)
 
@@ -450,17 +462,17 @@ class Model:
                 optimizer.step()
 
             # Validation step
-            if val_loader is not None:
+            if val_dataset is not None:
                 avg_loss = 0
                 with torch.no_grad():
-                    for images, targets in data_loader:
+                    for images, targets in dataset:
                         self._convert_to_int_labels(targets)
                         images, targets = self._to_device(images, targets)
                         loss_dict = self._model(images, targets)
                         total_loss = sum(loss for loss in loss_dict.values())
                         avg_loss += total_loss.item()
 
-                avg_loss /= len(val_loader.dataset)
+                avg_loss /= len(val_dataset.dataset)
                 losses.append(avg_loss)
 
                 if verbose:
