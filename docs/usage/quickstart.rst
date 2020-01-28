@@ -49,7 +49,8 @@ Your data may look like the following::
     |   image2.xml
     |   ...
 
-Or like the following::
+Above is the recommended way to store your data. However, other formats work
+as well, such as the following::
 
     your_images_folder/
     |   image1.jpg
@@ -62,7 +63,23 @@ Or like the following::
     |   ...
 
 If you'd like to split your data into a training set and a validation set,
-the images can be in the same folder, but the XML files should be in
+you could have two separate folders like so::
+
+    training_data/
+    |   image1.jpg
+    |   image1.xml
+    |   image2.jpg
+    |   image2.xml
+    |   ...
+
+    validation_data/
+    |   image3.jpg
+    |   image3.xml
+    |   image4.jpg
+    |   image4.xml
+    |   ...
+
+Or, you can have all the images in the same folder but the XML files in
 separate folders::
 
     your_images_folder/
@@ -80,6 +97,9 @@ separate folders::
     |   image4.xml
     |   ...
 
+Note that your images and XML files don't need to share the same file name.
+However, doing so can make associations between files clearer.
+
 Code
 ----
 
@@ -92,16 +112,26 @@ First, check that you can read in and plot an image::
     plt.imshow(image)
     plt.show()
 
-Next, convert your XML label files into a CSV file. This allows us to create
-a Dataset of our images that we can index over, as you'll see later::
+Next, create a Dataset object from your images and label data::
 
     from detecto.core import Dataset
+
+    # If your images and labels are in the same folder
+    dataset = Dataset('your_images_and_labels/')
+    # If your images and labels are in separate folders
+    dataset = Dataset('your_labels/', 'your_images/')
+
+If you plan to make many runs over your training data, you may want
+to generate a CSV file from your XML data. Then, whenever you create a
+Dataset, you can pass it this CSV file instead of your folder of XML
+files. This will cause creating Datasets to run much faster.
+
     from detecto.utils import xml_to_csv
 
-    xml_to_csv('your_xml_folder', 'your_output_file.csv')
-    dataset = Dataset('your_output_file.csv', 'your_images/')
+    xml_to_csv('your_labels/', 'labels.csv')
+    dataset = Dataset('labels.csv', 'your_images/')
 
-Alternatively, apply some `custom transforms
+In addition, you can apply many `custom transforms
 <https://pytorch.org/docs/stable/torchvision/transforms.html>`_ on your dataset
 for purposes such as data augmentation. If you choose to supply your own
 transforms, note that you must convert the images to torch.Tensors and normalize
@@ -121,7 +151,7 @@ saturation augmentations, and then finally convert back to normalized tensors::
         transforms.ToTensor(),  # required
         normalize_transform(),  # required
     ])
-    dataset = Dataset('your_output_file.csv', 'your_images/', transform=custom_transforms)
+    dataset = Dataset('your_training_data/', transform=custom_transforms)
 
 Let's check to make sure we have a working dataset; when we index it, we should
 receive a tuple of the image and a dict containing label and box data. As the
@@ -135,10 +165,12 @@ original as possible::
     show_labeled_image(image, targets['boxes'])
 
 Now, let's train a model on our dataset. First, specify what classes you
-want to predict when initializing the Model. After that, we'll need
-to create a DataLoader over our dataset; because image datasets are typically
+want to predict when initializing the Model. After that, you can optionally
+create a DataLoader over your Dataset; because image datasets are typically
 very large, the model can only train on it in smaller batches. The DataLoader
-helps define how we batch and feed our images into the model for training::
+helps define how we batch and feed our images into the model for training. If
+you decide not to provide your own DataLoader, the model with automatically
+wrap your dataset in a default DataLoader when training::
 
     from detecto.core import DataLoader, Model
 
@@ -146,15 +178,17 @@ helps define how we batch and feed our images into the model for training::
     your_labels = ['label1', 'label2', '...']
     model = Model(your_labels)
 
+    model.fit(dataset, verbose=True)
+
+    # Alternatively, provide your own DataLoader to the fit method
     loader = DataLoader(dataset, batch_size=2, shuffle=True)
     model.fit(loader, verbose=True)
 
-Optionally, supply a validation dataset to track accuracy throughout training
-and tweak some of the training options::
+You can also supply a validation dataset to track accuracy throughout training
+as well as tweak some of the training parameters::
 
-    val_dataset = Dataset('your_val_labels.csv', 'your_val_images/')
-    val_loader = DataLoader(val_dataset)
-    losses = model.fit(loader, val_loader, epochs=15, learning_rate=0.01,
+    val_dataset = Dataset('validation_dataset/')
+    losses = model.fit(dataset, val_dataset, epochs=15, learning_rate=0.01,
                        gamma=0.2, lr_step_size=5, verbose=True)
 
     plt.plot(losses)
