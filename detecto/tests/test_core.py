@@ -1,6 +1,7 @@
 import torch
 
 from detecto.core import *
+from detecto.utils import read_image
 from .helpers import get_dataset, get_image, get_model, empty_predictor
 from torchvision import transforms
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
@@ -101,6 +102,18 @@ def test_model_internal():
     # _int_mapping should give the right index of each class
     for k in model._int_mapping:
         assert model._classes[model._int_mapping[k]] == k
+
+
+def test_model_default():
+    path = os.path.dirname(__file__)
+    file = os.path.join(path, 'static/apple_orange.jpg')
+
+    model = Model()
+    preds = model.predict_top(read_image(file))
+
+    assert len(preds[0]) >= 2
+    assert 'orange' in preds[0] and 'apple' in preds[0]
+    assert sum(preds[2]) / len(preds[2]) > 0.50
 
 
 # Ensure that fitting the model increases accuracy and returns the losses
