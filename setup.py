@@ -5,10 +5,10 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="detecto",
-    version="1.0.2",
+    version="1.1.0",
     author="Alan Bi",
     author_email="alan.bi326@gmail.com",
-    description="A Python package for quick and easy object detection",
+    description="Build and train computer vision models with 5 lines of code",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/alankbi/detecto",
