@@ -133,21 +133,18 @@ def test_model_fit():
             initial_loss += total_loss.item()
     initial_loss /= len(loader.dataset)
 
-    losses = model.fit(loader, val_dataset=loader, epochs=2)
+    losses = model.fit(loader, val_dataset=loader, epochs=1)
 
     # Average loss during training should be lower than initial loss
-    assert len(losses) == 2
-    assert sum(losses) / 2 < initial_loss
+    assert len(losses) == 1
+    assert losses[0] < initial_loss
 
     # Should not return anything if not validation losses are produced
     losses = model.fit(loader, loader, epochs=0)
     assert losses is None
 
     # Works when given datasets
-    model = Model(['start_tick', 'start_gate'])
-    dataset = get_dataset()
     losses = model.fit(dataset, val_dataset=dataset, epochs=1)
-
     assert len(losses) == 1
 
 
