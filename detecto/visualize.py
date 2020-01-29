@@ -3,11 +3,11 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import torch
 
-from detecto.utils import reverse_normalize, normalize_transform
+from detecto.utils import reverse_normalize, normalize_transform, _is_iterable
 from torchvision import transforms
 
 
-def detect_video(model, input_file, output_file, fps=30):
+def detect_video(model, input_file, output_file, fps=30, score_filter=0.8):
     """Takes in a video and produces an output video with object detection
     run on it (i.e. displays boxes around detected objects in real-time).
     Output videos should have the .avi file extension. Note: some apps,
@@ -26,6 +26,9 @@ def detect_video(model, input_file, output_file, fps=30):
     :param fps: (Optional) Frames per second of the output video.
         Defaults to 30.
     :type fps: int
+    :param score_filter: (Optional) Minimum score required to show a
+        prediction. Defaults to 0.8.
+    :type score_filter: float
 
     **Example**::
 
@@ -33,7 +36,7 @@ def detect_video(model, input_file, output_file, fps=30):
         >>> from detecto.visualize import detect_video
 
         >>> model = Model.load('model_weights.pth', ['tick', 'gate'])
-        >>> detect_video(model, 'input_vid.mp4', 'output_vid.avi', fps=20)
+        >>> detect_video(model, 'input_vid.mp4', 'output_vid.avi', score_filter=0.6)
     """
 
     # Read in the video
@@ -52,7 +55,7 @@ def detect_video(model, input_file, output_file, fps=30):
     out = cv2.VideoWriter(output_file, cv2.VideoWriter_fourcc(*'DIVX'), fps, (frame_width, frame_height))
 
     # Transform to apply on individual frames of the video
-    transform_frame = transforms.Compose([
+    transform_frame = transforms.Compose([  # TODO Issue #16
         transforms.ToPILImage(),
         transforms.Resize(scaled_size),
         transforms.ToTensor(),
@@ -67,14 +70,18 @@ def detect_video(model, input_file, output_file, fps=30):
             break
 
         # The transformed frame is what we'll feed into our model
-        transformed_frame = transform_frame(frame)
-        predictions = model.predict_top(transformed_frame)
+        # transformed_frame = transform_frame(frame)
+        transformed_frame = frame  # TODO: Issue #16
+        predictions = model.predict(transformed_frame)
 
         # Add the top prediction of each class to the frame
         for label, box, score in zip(*predictions):
+            if score < score_filter:
+                continue
+
             # Since the predictions are for scaled down frames,
             # we need to increase the box dimensions
-            box *= scale_down_factor
+            # box *= scale_down_factor  # TODO Issue #16
 
             # Create the box around each object detected
             # Parameters: frame, (start_x, start_y), (end_x, end_y), (r, g, b), thickness
@@ -101,7 +108,7 @@ def detect_video(model, input_file, output_file, fps=30):
     cv2.destroyAllWindows()
 
 
-def plot_prediction_grid(model, images, dim=None, figsize=None):
+def plot_prediction_grid(model, images, dim=None, figsize=None, score_filter=0.8):
     """Plots a grid of images with boxes drawn around predicted objects.
 
     :param model: The trained model with which to run object detection.
@@ -118,6 +125,9 @@ def plot_prediction_grid(model, images, dim=None, figsize=None):
     :param figsize: (Optional) The size of the entire grid in the format
         ``(width, height)``. Defaults to None.
     :type figsize: tuple or None
+    :param score_filter: (Optional) Minimum score required to show a
+        prediction. Defaults to 0.8.
+    :type score_filter: float
 
     **Example**::
 
@@ -147,7 +157,7 @@ def plot_prediction_grid(model, images, dim=None, figsize=None):
     for i in range(dim[0]):
         for j in range(dim[1]):
             image = images[index]
-            preds = model.predict_top(image)
+            preds = model.predict(image)
 
             # If already a tensor, reverse normalize it and turn it back
             if isinstance(image, torch.Tensor):
@@ -168,21 +178,23 @@ def plot_prediction_grid(model, images, dim=None, figsize=None):
 
             # Plot boxes and labels
             for label, box, score in zip(*preds):
-                width, height = box[2] - box[0], box[3] - box[1]
-                initial_pos = (box[0], box[1])
-                rect = patches.Rectangle(initial_pos, width, height, linewidth=1,
-                                         edgecolor='r', facecolor='none')
-                ax.add_patch(rect)
+                if score >= score_filter:
+                    width, height = box[2] - box[0], box[3] - box[1]
+                    initial_pos = (box[0], box[1])
+                    rect = patches.Rectangle(initial_pos, width, height, linewidth=1,
+                                             edgecolor='r', facecolor='none')
+                    ax.add_patch(rect)
 
-                ax.text(box[0] + 5, box[1] - 10, '{}: {}'
-                        .format(label, round(score.item(), 2)), color='red')
+                    ax.text(box[0] + 5, box[1] - 10, '{}: {}'
+                            .format(label, round(score.item(), 2)), color='red')
                 ax.set_title('Image {}'.format(index))
 
     plt.show()
 
 
-def show_labeled_image(image, boxes):
+def show_labeled_image(image, boxes, labels=None):
     """Show the image along with the specified boxes around detected objects.
+    Also displays each box's label if a list of labels is provided.
 
     :param image: The image to plot. If the image is a normalized
         torch.Tensor object, it will automatically be reverse-normalized
@@ -191,6 +203,9 @@ def show_labeled_image(image, boxes):
     :param boxes: A torch tensor of size (N, 4) where N is the number
         of boxes to plot, or simply size 4 if N is 1.
     :type boxes: torch.Tensor
+    :param labels: (Optional) A list of size N giving the labels of
+            each box (labels[i] corresponds to boxes[i]). Defaults to None.
+    :type labels: torch.Tensor or None
 
     **Example**::
 
@@ -201,7 +216,7 @@ def show_labeled_image(image, boxes):
         >>> model = Model.load('model_weights.pth', ['tick', 'gate'])
         >>> image = read_image('image.jpg')
         >>> labels, boxes, scores = model.predict(image)
-        >>> show_labeled_image(image, boxes)
+        >>> show_labeled_image(image, boxes, labels)
     """
 
     fig, ax = plt.subplots(1)
@@ -216,12 +231,18 @@ def show_labeled_image(image, boxes):
     if boxes.ndim == 1:
         boxes = boxes.view(1, 4)
 
+    if not _is_iterable(labels):
+        labels = [labels]
+
     # Plot each box
-    for box in boxes:
+    for i in range(boxes.shape[0]):
+        box = boxes[i]
         width, height = (box[2] - box[0]).item(), (box[3] - box[1]).item()
         initial_pos = (box[0].item(), box[1].item())
         rect = patches.Rectangle(initial_pos,  width, height, linewidth=1,
                                  edgecolor='r', facecolor='none')
+        if labels:
+            ax.text(box[0] + 5, box[1] - 5, '{}'.format(labels[i]), color='red')
 
         ax.add_patch(rect)
 

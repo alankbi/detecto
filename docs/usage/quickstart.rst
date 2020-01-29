@@ -162,7 +162,7 @@ original as possible::
     from detecto.visualize import show_labeled_image
 
     image, targets = dataset[0]
-    show_labeled_image(image, targets['boxes'])
+    show_labeled_image(image, targets['boxes'], targets['labels'])
 
 Now, let's train a model on our dataset. First, specify what classes you
 want to predict when initializing the Model. After that, you can optionally
@@ -217,6 +217,6 @@ video with real-time object detection::
     from detecto.visualize import plot_prediction_grid, detect_video
 
     plot_prediction_grid(model, images, dim=(2, 2), figsize=(8, 8))
-    detect_video(model, 'your_input_video.mp4', 'your_output_file.avi')
+    detect_video(model, 'your_input_video.mp4', 'your_output_file.avi', score_filter=0.7)
 
 For next steps, see the :ref:`Further Usage <further-usage>` tutorial.
