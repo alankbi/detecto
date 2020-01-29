@@ -231,7 +231,7 @@ def show_labeled_image(image, boxes, labels=None):
     if boxes.ndim == 1:
         boxes = boxes.view(1, 4)
 
-    if not _is_iterable(labels):
+    if labels is not None and not _is_iterable(labels):
         labels = [labels]
 
     # Plot each box
