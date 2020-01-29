@@ -242,6 +242,7 @@ class Model:
             in_features = self._model.roi_heads.box_predictor.cls_score.in_features
             # Replace the pre-trained head with a new one (note: +1 because of the __background__ class)
             self._model.roi_heads.box_predictor = FastRCNNPredictor(in_features, len(classes) + 1)
+            self._disable_normalize = False
         else:
             classes = config['default_classes']
             self._disable_normalize = True
