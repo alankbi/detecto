@@ -1,6 +1,7 @@
 import torch
 
 from detecto.core import *
+from detecto.utils import read_image
 from .helpers import get_dataset, get_image, get_model, empty_predictor
 from torchvision import transforms
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
@@ -103,6 +104,18 @@ def test_model_internal():
         assert model._classes[model._int_mapping[k]] == k
 
 
+# def test_model_default():
+#     path = os.path.dirname(__file__)
+#     file = os.path.join(path, 'static/apple_orange.jpg')
+#
+#     model = Model()
+#     preds = model.predict_top(read_image(file))
+#
+#     assert len(preds[0]) >= 2
+#     assert 'orange' in preds[0] and 'apple' in preds[0]
+#     assert sum(preds[2]) / len(preds[2]) > 0.50
+
+
 # Ensure that fitting the model increases accuracy and returns the losses
 def test_model_fit():
     model = Model(['start_tick', 'start_gate'])
@@ -120,21 +133,18 @@ def test_model_fit():
             initial_loss += total_loss.item()
     initial_loss /= len(loader.dataset)
 
-    losses = model.fit(loader, val_dataset=loader, epochs=2)
+    losses = model.fit(loader, val_dataset=loader, epochs=1)
 
     # Average loss during training should be lower than initial loss
-    assert len(losses) == 2
-    assert sum(losses) / 2 < initial_loss
+    assert len(losses) == 1
+    assert losses[0] < initial_loss
 
     # Should not return anything if not validation losses are produced
     losses = model.fit(loader, loader, epochs=0)
     assert losses is None
 
     # Works when given datasets
-    model = Model(['start_tick', 'start_gate'])
-    dataset = get_dataset()
     losses = model.fit(dataset, val_dataset=dataset, epochs=1)
-
     assert len(losses) == 1
 
 

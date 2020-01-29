@@ -4,7 +4,7 @@ import random
 import torch
 import torchvision
 
-from detecto.config import default_device
+from detecto.config import config
 from detecto.utils import default_transforms, filter_top_predictions, xml_to_csv, _is_iterable
 from skimage import io
 from torchvision import transforms
@@ -205,15 +205,19 @@ class Dataset(torch.utils.data.Dataset):
 
 class Model:
 
-    def __init__(self, classes, device=None):
+    def __init__(self, classes=None, device=None):
         """Initializes a machine learning model for object detection.
         Models are built on top of PyTorch's `pre-trained models
         <https://pytorch.org/docs/stable/torchvision/models.html>`_,
         specifically the Faster R-CNN ResNet-50 FPN, but allow for
         fine-tuning to predict on custom classes/labels.
 
-        :param classes: A list of classes/labels for the model to predict.
-        :type classes: list
+        :param classes: (Optional) A list of classes/labels for the model
+            to predict. If none given, uses the default classes specified
+            `here <https://pytorch.org/docs/stable/torchvision/models.html
+            #object-detection-instance-segmentation-and-person-keypoint-detection>`_.
+            Defaults to None.
+        :type classes: list or None
         :param device: (Optional) The device on which to run the model,
             such as the CPU or GPU. See `here
             <https://pytorch.org/docs/stable/tensor_attributes.html#torch-device>`_
@@ -228,15 +232,20 @@ class Model:
             >>> model = Model(['dog', 'cat', 'bunny'])
         """
 
-        self._device = device if device else default_device
+        self._device = device if device else config['default_device']
 
         # Load a model pre-trained on COCO
         self._model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
 
-        # Get the number of input features for the classifier
-        in_features = self._model.roi_heads.box_predictor.cls_score.in_features
-        # Replace the pre-trained head with a new one (note: +1 because of the __background__ class)
-        self._model.roi_heads.box_predictor = FastRCNNPredictor(in_features, len(classes) + 1)
+        if classes:
+            # Get the number of input features for the classifier
+            in_features = self._model.roi_heads.box_predictor.cls_score.in_features
+            # Replace the pre-trained head with a new one (note: +1 because of the __background__ class)
+            self._model.roi_heads.box_predictor = FastRCNNPredictor(in_features, len(classes) + 1)
+            self._disable_normalize = False
+        else:
+            classes = config['default_classes']
+            self._disable_normalize = True
 
         self._model.to(self._device)
 
@@ -255,7 +264,13 @@ class Model:
 
             # Convert to tensor and normalize if not already
             if not isinstance(images[0], torch.Tensor):
-                defaults = default_transforms()
+                # This is a temporary workaround to the bad accuracy
+                # when normalizing on default weights. Will need to
+                # investigate further TODO
+                if self._disable_normalize:
+                    defaults = transforms.Compose([transforms.ToTensor()])
+                else:
+                    defaults = default_transforms()
                 images = [defaults(img) for img in images]
 
             # Send images to the specified device
@@ -422,6 +437,12 @@ class Model:
             [0.11191498369799327, 0.09899920264606253, 0.08454859235434461,
                 0.06825731012780788, 0.06236840748117637]
         """
+
+        # If doing custom training, the given images will most likely be
+        # normalized. This should fix the issue of poor performance on
+        # default classes when normalizing, so resume normalizing. TODO
+        if epochs > 0:
+            self._disable_normalize = False
 
         # Convert dataset to data loader if not already
         if not isinstance(dataset, DataLoader):
