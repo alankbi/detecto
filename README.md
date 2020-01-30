@@ -5,41 +5,113 @@
 [![Documentation Status](https://readthedocs.org/projects/detecto/badge/?version=latest)](https://detecto.readthedocs.io/en/latest/?badge=latest)
 
 
-Detecto is a Python package for quick and easy object detection. Below are just a few of the features available:
+Detecto is a Python package that allows you to build fully-functioning computer vision and object detection models with 5 lines of code. 
+Features include inference on still images and videos, transfer learning on custom datasets, serialization of models to files, and much more. 
 
-* Train models on custom datasets
-* Get all or top predictions on an image
-* Run object detection on videos
-* Save and load models from files
+Detecto is built on top of PyTorch, allowing an easy transfer of models between the two libraries.  
 
-Detecto is built on top of PyTorch, meaning models trained with Detecto can easily be extracted and used with PyTorch code. 
+Still image                                                  |  Video
+:-----------------------------------------------------------:|:-----------------------------------------:
+![Detection on an apple and orange](assets/apple_orange.png) | ![Video demo of Detecto](assets/demo.gif)
 
-![Video demo of Detecto](assets/demo.gif)
-
-## Usage and Docs
+## Installation
 
 To install Detecto using pip, run the following command:
 
 `pip3 install detecto`
 
-After installing Detecto, you can train a machine learning model on a custom dataset and run object detection on a video with under ten lines of code:
+# Usage
+
+The power of Detecto comes from its simplicity and ease of use. Creating and running a pre-trained Faster R-CNN ResNet-50 FPN from PyTorch's model zoo takes 4 lines of code:
 
 ```python
-from detecto.core import Model, Dataset, DataLoader
-from detecto.utils import xml_to_csv
+from detecto.core import Model
 from detecto.visualize import detect_video
 
-xml_to_csv('xml_labels/', 'labels.csv')
-dataset = Dataset('labels.csv', 'images/')
-loader = DataLoader(dataset)
-
-model = Model(['dog', 'cat', 'rabbit'])
-model.fit(loader)
-
-detect_video(model, 'input_video.mp4', 'output_video.avi')
+model = Model()  # Initialize a pre-trained model
+detect_video(model, 'input_video.mp4', 'output.avi')  # Run inference on a video
 ```
 
-Visit the [docs](https://detecto.readthedocs.io/) for a full guide, including a [quickstart](https://detecto.readthedocs.io/en/latest/usage/quickstart.html) tutorial.
+Below are several more examples of things you can do with Detecto:
+
+#### Transfer Learning on Custom Datasets
+
+Most of the times, you want a computer vision model that can detect custom objects. With Detecto, you can train a model on a custom dataset with 5 lines of code: 
+
+```python
+from detecto.core import Model, Dataset
+
+dataset = Dataset('custom_dataset/')  # Load images and label data from the custom_dataset/ folder
+
+model = Model(['dog', 'cat', 'rabbit'])  # Train to predict dogs, cats, and rabbits
+model.fit(dataset)
+
+model.predict(...)  # Start using your trained model!
+```
+
+#### Inference and Visualization
+
+When using a model for inference, Detecto returns predictions in an easy-to-use format and provides several visualization tools:
+
+```python
+
+from detecto.core import Model
+from detecto import utils, visualize
+
+model = Model()
+
+image = utils.read_image('image.jpg')  # Helper function to read in images
+
+labels, boxes, scores = model.predict(image)  # Get all predictions on an image
+predictions = model.predict_top(image)  # Same as above, but returns only the top predictions
+
+print(labels, boxes, scores)
+print(predictions)
+
+images = [...]
+visualize.plot_prediction_grid(model, images)  # Plot predictions on a list of images
+
+visualize.detect_video(model, 'input_video.mp4', 'output.avi')  # Run inference on a video
+```
+
+#### Advanced Usage
+
+If you want more control over how you train your model, Detecto lets you do just that:
+
+```python
+
+from detecto import core, utils
+from torchvision import transforms
+
+# Convert XML files to CSV format
+utils.xml_to_csv('training_labels/', 'train_labels.csv')
+utils.xml_to_csv('validation_labels/', 'val_labels.csv')
+
+# Define custom transforms to apply to your dataset
+custom_transforms = transforms.Compose([
+    transforms.ToPILImage(),
+    transforms.Resize(800),
+    transforms.ColorJitter(saturation=0.3),
+    transforms.ToTensor(),
+    utils.normalize_transform(),
+])
+
+# Pass in CSV file instead of XML files for faster creation
+dataset = core.Dataset('train_labels.csv', 'images/', transform=custom_transforms)
+val_dataset = core.Dataset('val_labels.csv', 'val_images')  # Validation dataset for training
+
+loader = core.DataLoader(dataset, batch_size=2, shuffle=True)  # Create your own DataLoader with custom options
+
+model = core.Model(['car', 'truck', 'boat', 'plane'])
+model.fit(loader, val_dataset, epochs=15, learning_rate=0.001, verbose=True)  # Training options
+
+model.save('model_weights.pth')  # Save model to a file
+
+torch_model = model.get_internal_model()  # Directly access underlying torchvision model for even more control
+print(type(torch_model))
+```
+
+For more examples, visit the [docs](https://detecto.readthedocs.io/), which includes a [quickstart](https://detecto.readthedocs.io/en/latest/usage/quickstart.html) tutorial.
 
 Alternatively, check out the [demo on Colab](https://colab.research.google.com/drive/1ISaTV5F-7b4i2QqtjTa7ToDPQ2k8qEe0).  
 

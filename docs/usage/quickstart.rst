@@ -12,7 +12,7 @@ Technical Requirements
 ----------------------
 
 By default, Detecto will run all heavy-duty code on the GPU if it's available
-and on the CPU otherwise. However, training and inference can take a long
+and on the CPU otherwise. However, training and even inference can take a long
 time without a GPU. Thus, if your computer doesn't have a GPU you can use,
 consider using a service such as `Google Colab
 <https://colab.research.google.com/>`_, which comes with a free GPU.
