@@ -8,17 +8,22 @@
 Detecto is a Python package that allows you to build fully-functioning computer vision and object detection models with 5 lines of code. 
 Features include inference on still images and videos, transfer learning on custom datasets, serialization of models to files, and much more. 
 
-Detecto is built on top of PyTorch, allowing an easy transfer of models between the two libraries.  
+Detecto is built on top of PyTorch, allowing an easy transfer of models between the two libraries.
 
-Still image                                                  |  Video
-:-----------------------------------------------------------:|:-----------------------------------------:
-![Detection on an apple and orange](assets/apple_orange.png) | ![Video demo of Detecto](assets/demo.gif)
+The table below shows a few examples of Detecto's performance:   
 
-## Installation
+Still Image                                                                   |  Video
+:----------------------------------------------------------------------------:|:-----------------------------------------:
+<img src="./assets/apple_orange.png" alt="Detecto still image" width="500px"> | ![Video demo of Detecto](assets/demo.gif)
+
+# Installation
 
 To install Detecto using pip, run the following command:
 
 `pip3 install detecto`
+
+Installing with pip should download all of Detecto's dependencies automatically. 
+However, if an issue arises, you can manually download the dependencies listed in the [requirements.txt](requirements.txt) file.
 
 # Usage
 
@@ -34,7 +39,7 @@ detect_video(model, 'input_video.mp4', 'output.avi')  # Run inference on a video
 
 Below are several more examples of things you can do with Detecto:
 
-#### Transfer Learning on Custom Datasets
+### Transfer Learning on Custom Datasets
 
 Most of the times, you want a computer vision model that can detect custom objects. With Detecto, you can train a model on a custom dataset with 5 lines of code: 
 
@@ -49,7 +54,7 @@ model.fit(dataset)
 model.predict(...)  # Start using your trained model!
 ```
 
-#### Inference and Visualization
+### Inference and Visualization
 
 When using a model for inference, Detecto returns predictions in an easy-to-use format and provides several visualization tools:
 
@@ -74,7 +79,7 @@ visualize.plot_prediction_grid(model, images)  # Plot predictions on a list of i
 visualize.detect_video(model, 'input_video.mp4', 'output.avi')  # Run inference on a video
 ```
 
-#### Advanced Usage
+### Advanced Usage
 
 If you want more control over how you train your model, Detecto lets you do just that:
 
@@ -100,14 +105,16 @@ custom_transforms = transforms.Compose([
 dataset = core.Dataset('train_labels.csv', 'images/', transform=custom_transforms)
 val_dataset = core.Dataset('val_labels.csv', 'val_images')  # Validation dataset for training
 
-loader = core.DataLoader(dataset, batch_size=2, shuffle=True)  # Create your own DataLoader with custom options
+# Create your own DataLoader with custom options
+loader = core.DataLoader(dataset, batch_size=2, shuffle=True) 
 
 model = core.Model(['car', 'truck', 'boat', 'plane'])
 model.fit(loader, val_dataset, epochs=15, learning_rate=0.001, verbose=True)  # Training options
 
 model.save('model_weights.pth')  # Save model to a file
 
-torch_model = model.get_internal_model()  # Directly access underlying torchvision model for even more control
+# Directly access underlying torchvision model for even more control
+torch_model = model.get_internal_model()
 print(type(torch_model))
 ```
 
