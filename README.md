@@ -5,7 +5,7 @@
 [![Documentation Status](https://readthedocs.org/projects/detecto/badge/?version=latest)](https://detecto.readthedocs.io/en/latest/?badge=latest)
 
 
-Detecto is a Python package that allows you to build fully-functioning computer vision and object detection models with 5 lines of code. 
+Detecto is a Python package that allows you to build fully-functioning computer vision and object detection models with just 5 lines of code. 
 Features include inference on still images and videos, transfer learning on custom datasets, serialization of models to files, and much more. 
 
 Detecto is built on top of PyTorch, allowing an easy transfer of models between the two libraries.
@@ -27,7 +27,9 @@ However, if an issue arises, you can manually download the dependencies listed i
 
 # Usage
 
-The power of Detecto comes from its simplicity and ease of use. Creating and running a pre-trained Faster R-CNN ResNet-50 FPN from PyTorch's model zoo takes 4 lines of code:
+The power of Detecto comes from its simplicity and ease of use. Creating and running a pre-trained 
+[Faster R-CNN ResNet-50 FPN](https://pytorch.org/docs/stable/torchvision/models.html#object-detection-instance-segmentation-and-person-keypoint-detection) 
+from PyTorch's model zoo takes 4 lines of code:
 
 ```python
 from detecto.core import Model
@@ -73,6 +75,8 @@ predictions = model.predict_top(image)  # Same as above, but returns only the to
 print(labels, boxes, scores)
 print(predictions)
 
+visualize.show_labeled_image(image, boxes, labels)  # Plot predictions on a single image
+
 images = [...]
 visualize.plot_prediction_grid(model, images)  # Plot predictions on a list of images
 
@@ -87,6 +91,7 @@ If you want more control over how you train your model, Detecto lets you do just
 
 from detecto import core, utils
 from torchvision import transforms
+import matplotlib.pyplot as plt
 
 # Convert XML files to CSV format
 utils.xml_to_csv('training_labels/', 'train_labels.csv')
@@ -101,7 +106,7 @@ custom_transforms = transforms.Compose([
     utils.normalize_transform(),
 ])
 
-# Pass in CSV file instead of XML files for faster creation
+# Pass in a CSV file instead of XML files for faster Dataset initialization speeds
 dataset = core.Dataset('train_labels.csv', 'images/', transform=custom_transforms)
 val_dataset = core.Dataset('val_labels.csv', 'val_images')  # Validation dataset for training
 
@@ -109,7 +114,10 @@ val_dataset = core.Dataset('val_labels.csv', 'val_images')  # Validation dataset
 loader = core.DataLoader(dataset, batch_size=2, shuffle=True) 
 
 model = core.Model(['car', 'truck', 'boat', 'plane'])
-model.fit(loader, val_dataset, epochs=15, learning_rate=0.001, verbose=True)  # Training options
+losses = model.fit(loader, val_dataset, epochs=15, learning_rate=0.001, verbose=True)
+
+plt.plot(losses)  # Visualize loss throughout training
+plt.show()
 
 model.save('model_weights.pth')  # Save model to a file
 
