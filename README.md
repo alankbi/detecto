@@ -129,7 +129,7 @@ For more examples, visit the [docs](https://detecto.readthedocs.io/), which incl
 
 Alternatively, check out the [demo on Colab](https://colab.research.google.com/drive/1ISaTV5F-7b4i2QqtjTa7ToDPQ2k8qEe0).  
 
-## API Documentation
+# API Documentation
 
 The full API documentation can be found at [detecto.readthedocs.io](https://detecto.readthedocs.io/en/latest/api/index.html).
 The docs are split into three sections, each corresponding to one of Detecto's modules:
@@ -150,7 +150,7 @@ The [detecto.visualize](https://detecto.readthedocs.io/en/latest/api/visualize.h
 
 
 
-## Contributing
+# Contributing
 
 All issues and pull requests are welcome! To run the code locally, first fork the repository and then run the following commands on your computer: 
 
