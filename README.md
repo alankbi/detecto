@@ -6,9 +6,8 @@
 
 
 Detecto is a Python package that allows you to build fully-functioning computer vision and object detection models with just 5 lines of code. 
-Features include inference on still images and videos, transfer learning on custom datasets, serialization of models to files, and much more. 
-
-Detecto is built on top of PyTorch, allowing an easy transfer of models between the two libraries.
+Inference on still images and videos, transfer learning on custom datasets, and serialization of models to files are just a few of Detecto's features. 
+Detecto is also built on top of PyTorch, allowing an easy transfer of models between the two libraries.
 
 The table below shows a few examples of Detecto's performance:   
 
@@ -129,6 +128,27 @@ print(type(torch_model))
 For more examples, visit the [docs](https://detecto.readthedocs.io/), which includes a [quickstart](https://detecto.readthedocs.io/en/latest/usage/quickstart.html) tutorial.
 
 Alternatively, check out the [demo on Colab](https://colab.research.google.com/drive/1ISaTV5F-7b4i2QqtjTa7ToDPQ2k8qEe0).  
+
+## API Documentation
+
+The full API documentation can be found at [detecto.readthedocs.io](https://detecto.readthedocs.io/en/latest/api/index.html).
+The docs are split into three sections, each corresponding to one of Detecto's modules:
+
+### Core
+
+The [detecto.core](https://detecto.readthedocs.io/en/latest/api/core.html) module contains the central classes of the package: Dataset, DataLoader, and Model. 
+These are used to read in a labeled dataset and train a functioning object detection model.
+
+### Utils
+
+The [detecto.utils](https://detecto.readthedocs.io/en/latest/api/utils.html) module contains a variety of useful helper functions. 
+With it, you can read in images, convert XML files into CSV files, apply standard transforms to images, and more.
+
+### Visualize
+
+The [detecto.visualize](https://detecto.readthedocs.io/en/latest/api/visualize.html) module is used to display labeled images, plot predictions, and run object detection on videos.
+
+
 
 ## Contributing
 

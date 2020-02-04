@@ -29,12 +29,12 @@ first initialized and saved the model.
 Beyond Detecto
 --------------
 
-Detecto abstracts away a lot of the details of of object detection, and at a
-certain point, you may decide you no longer want to use it. Since Detecto is
+Detecto abstracts away a lot of the details of machine learning, and at a
+certain point, you may decide you want more control. Since Detecto is
 built on top of PyTorch and torchvision, transitioning to these feature-rich
 libraries is easy. Simply use the :meth:`get_internal_model
 <detecto.core.Model.get_internal_model>` method to access the underlying
-torchvision model that :class:`detecto.core.Model` uses::
+torchvision model that Model uses::
 
     torch_model = model.get_internal_model()
     print(type(torch_model))
@@ -45,3 +45,15 @@ The internal model is a `Faster R-CNN ResNet-50 FPN
 with a FastRCNNPredictor box predictor. With the torchvision model itself,
 you can now fine-tune the model accuracy, modify the model architecture,
 and do many more things using the various PyTorch and torchvision modules.
+
+For example, the following code limits fine-tuning during training to only
+the last few layers of the model::
+
+    for name, p in torch_model.named_parameters():
+        print(name, p.requires_grad)
+
+        if 'roi_heads' not in name and 'rpn' not in name:
+            p.requires_grad = False
+
+    # Can then proceed to train your Detecto model as usual
+    model.fit(...)
