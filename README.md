@@ -176,6 +176,6 @@ make html
 
 The documentation can then be viewed at `docs/_build/html/index.html`.
 
-## Contact
+# Contact
 
 Detecto was created by [Alan Bi](https://www.alanbi.com/). Feel free to reach out on [Twitter](https://twitter.com/alankbi) or through [email](mailto:alan.bi326@gmail.com)!
