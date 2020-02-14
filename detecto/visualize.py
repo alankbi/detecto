@@ -7,7 +7,7 @@ from detecto.utils import reverse_normalize, normalize_transform, _is_iterable
 from torchvision import transforms
 
 
-def detect_video(model, input_file, output_file, fps=30, score_filter=0.8):
+def detect_video(model, input_file, output_file, fps=30, score_filter=0.6):
     """Takes in a video and produces an output video with object detection
     run on it (i.e. displays boxes around detected objects in real-time).
     Output videos should have the .avi file extension. Note: some apps,
@@ -27,7 +27,7 @@ def detect_video(model, input_file, output_file, fps=30, score_filter=0.8):
         Defaults to 30.
     :type fps: int
     :param score_filter: (Optional) Minimum score required to show a
-        prediction. Defaults to 0.8.
+        prediction. Defaults to 0.6.
     :type score_filter: float
 
     **Example**::
@@ -36,7 +36,7 @@ def detect_video(model, input_file, output_file, fps=30, score_filter=0.8):
         >>> from detecto.visualize import detect_video
 
         >>> model = Model.load('model_weights.pth', ['tick', 'gate'])
-        >>> detect_video(model, 'input_vid.mp4', 'output_vid.avi', score_filter=0.6)
+        >>> detect_video(model, 'input_vid.mp4', 'output_vid.avi', score_filter=0.7)
     """
 
     # Read in the video
@@ -108,7 +108,7 @@ def detect_video(model, input_file, output_file, fps=30, score_filter=0.8):
     cv2.destroyAllWindows()
 
 
-def plot_prediction_grid(model, images, dim=None, figsize=None, score_filter=0.8):
+def plot_prediction_grid(model, images, dim=None, figsize=None, score_filter=0.6):
     """Plots a grid of images with boxes drawn around predicted objects.
 
     :param model: The trained model with which to run object detection.
@@ -126,7 +126,7 @@ def plot_prediction_grid(model, images, dim=None, figsize=None, score_filter=0.8
         ``(width, height)``. Defaults to None.
     :type figsize: tuple or None
     :param score_filter: (Optional) Minimum score required to show a
-        prediction. Defaults to 0.8.
+        prediction. Defaults to 0.6.
     :type score_filter: float
 
     **Example**::
