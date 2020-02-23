@@ -188,7 +188,7 @@ def split_video(video_file, output_folder, prefix='frame', step_size=1):
 
         >>> from detecto.utils import split_video
 
-        >>> split_video('video.mp4/', 'frames/', step_size=4)
+        >>> split_video('video.mp4', 'frames/', step_size=4)
     """
 
     # Set step_size to minimum of 1
