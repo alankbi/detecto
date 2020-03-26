@@ -21,7 +21,7 @@ def detect_live(model, score_filter=0.6):
         prediction. Defaults to 0.6.
     :type score_filter: float
 
-     **Example**::
+    **Example**::
 
         >>> from detecto.core import Model
         >>> from detecto.visualize import detect_live

@@ -80,6 +80,7 @@ images = [...]
 visualize.plot_prediction_grid(model, images)  # Plot predictions on a list of images
 
 visualize.detect_video(model, 'input_video.mp4', 'output.avi')  # Run inference on a video
+visualize.detect_live(model)  # Run inference on a live webcam
 ```
 
 ### Advanced Usage
