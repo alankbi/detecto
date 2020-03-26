@@ -71,6 +71,7 @@ easy-to-use format and provides several visualization tools::
    visualize.plot_prediction_grid(model, images)
 
    visualize.detect_video(model, 'input_video.mp4', 'output.avi')
+   visualize.detect_live(model)
 
 **Advanced Usage**
 

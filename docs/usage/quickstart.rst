@@ -211,12 +211,13 @@ all predictions or just the top ones per label::
     print(predictions)
     print(top_predictions)
 
-Lastly, we can plot a grid of predictions across several images or generate a
-video with real-time object detection::
+Lastly, we can plot a grid of predictions across several images, generate a
+video with real-time object detection, or run predictions on a live webcam::
 
-    from detecto.visualize import plot_prediction_grid, detect_video
+    from detecto.visualize import plot_prediction_grid, detect_video, detect_live
 
     plot_prediction_grid(model, images, dim=(2, 2), figsize=(8, 8))
-    detect_video(model, 'your_input_video.mp4', 'your_output_file.avi', score_filter=0.7)
+    detect_video(model, 'your_input_video.mp4', 'your_output_file.avi')
+    detect_live(model, score_filter=0.7)  # Note: may not work on VMs
 
 For next steps, see the :ref:`Further Usage <further-usage>` tutorial.

@@ -7,6 +7,65 @@ from detecto.utils import reverse_normalize, normalize_transform, _is_iterable
 from torchvision import transforms
 
 
+def detect_live(model, score_filter=0.6):
+    """Displays in a window the given model's predictions on the current
+    computer's live webcam feed. To stop the webcam, press 'q' or the ESC
+    key. Note that if the given model is not running on a GPU, the webcam
+    framerate could very well be under 1 FPS. Also note that you should not
+    call this function on Google Colab or other services running on virtual
+    machines as they may not have access to the webcam.
+
+    :param model: The trained model with which to run object detection.
+    :type model: detecto.core.Model
+    :param score_filter: (Optional) Minimum score required to show a
+        prediction. Defaults to 0.6.
+    :type score_filter: float
+
+     **Example**::
+
+        >>> from detecto.core import Model
+        >>> from detecto.visualize import detect_live
+
+        >>> model = Model()
+        >>> detect_live(model, score_filter=0.7)
+    """
+
+    cv2.namedWindow('Detecto')
+    try:
+        video = cv2.VideoCapture(0)
+    except:
+        print('No webcam available.')
+        return
+
+    while True:
+        ret, frame = video.read()
+        if not ret:
+            break
+
+        labels, boxes, scores = model.predict(frame)
+
+        # Plot each box with its label and score
+        for i in range(boxes.shape[0]):
+            if scores[i] < score_filter:
+                continue
+
+            box = boxes[i]
+            cv2.rectangle(frame, (box[0], box[1]), (box[2], box[3]), (255, 0, 0), 3)
+            if labels:
+                cv2.putText(frame, '{}: {}'.format(labels[i], round(scores[i].item(), 2)), (box[0], box[1] - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+
+        cv2.imshow('Detecto', frame)
+
+        # If the 'q' or ESC key is pressed, break from the loop
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q') or key == 27:
+            break
+
+    cv2.destroyWindow('Detecto')
+    video.release()
+
+
 def detect_video(model, input_file, output_file, fps=30, score_filter=0.6):
     """Takes in a video and produces an output video with object detection
     run on it (i.e. displays boxes around detected objects in real-time).
@@ -97,7 +156,7 @@ def detect_video(model, input_file, output_file, fps=30, score_filter=0.6):
 
         # If the 'q' key is pressed, break from the loop
         key = cv2.waitKey(1) & 0xFF
-        if key == ord("q"):
+        if key == ord('q'):
             break
 
     # When finished, release the video capture and writer objects
