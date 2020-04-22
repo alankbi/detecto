@@ -20,7 +20,7 @@ sys.path.append('detecto')
 # -- Mock module dependencies ------------------------------------------------
 
 autodoc_mock_imports = ['cv2', 'matplotlib', 'matplotlib.patches',
-                        'matplotlib.pyplot', 'pandas', 'skimage', 'torch',
+                        'matplotlib.pyplot', 'pandas', 'torch',
                         'torch.utils', 'torch.utils.data', 'torchvision',
                         'torchvision.transforms',
                         'torchvision.models.detection.faster_rcnn']

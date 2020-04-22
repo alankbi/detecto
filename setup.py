@@ -17,7 +17,6 @@ setuptools.setup(
         'matplotlib',
         'opencv-python',
         'pandas',
-        'scikit-image',
         'torch',
         'torchvision',
     ],

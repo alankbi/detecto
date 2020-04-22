@@ -2,8 +2,7 @@ import os
 import torch
 
 from detecto.core import Model, Dataset
-from detecto.utils import xml_to_csv
-from skimage import io
+from detecto.utils import xml_to_csv, read_image
 
 
 def get_dataset(**kwargs):
@@ -21,7 +20,7 @@ def get_dataset(**kwargs):
 def get_image():
     path = os.path.dirname(__file__)
     file = 'static/image.jpg'
-    return io.imread(os.path.join(path, file))
+    return read_image(os.path.join(path, file))
 
 
 def get_model():

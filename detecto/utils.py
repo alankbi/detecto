@@ -5,7 +5,6 @@ import torch
 import xml.etree.ElementTree as ET
 
 from glob import glob
-from skimage import io
 from torchvision import transforms
 
 
@@ -113,7 +112,8 @@ def normalize_transform():
 def read_image(path):
     """Helper function that reads in an image as a
     `NumPy <https://numpy.org/>`_ array. Equivalent to using
-    `scikit-image <https://scikit-image.org/>`_'s io.imread function.
+    `OpenCV <https://docs.opencv.org/master/>`_'s cv2.imread
+    function and converting from BGR to RGB format.
 
     :param path: The path to the image.
     :type path: str
@@ -130,7 +130,8 @@ def read_image(path):
         >>> plt.show()
     """
 
-    return io.imread(path)
+    image = cv2.imread(path)
+    return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
 
 def reverse_normalize(image):

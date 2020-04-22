@@ -5,8 +5,7 @@ import torch
 import torchvision
 
 from detecto.config import config
-from detecto.utils import default_transforms, filter_top_predictions, xml_to_csv, _is_iterable
-from skimage import io
+from detecto.utils import default_transforms, filter_top_predictions, xml_to_csv, _is_iterable, read_image
 from torchvision import transforms
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
@@ -147,7 +146,7 @@ class Dataset(torch.utils.data.Dataset):
 
         # Read in the image from the file name in the 0th column
         img_name = os.path.join(self._root_dir, self._csv.iloc[idx, 0])
-        image = io.imread(img_name)
+        image = read_image(img_name)
 
         # Read in xmin, ymin, xmax, and ymax
         box = self._csv.iloc[idx, 4:]

@@ -3,7 +3,6 @@ mock
 opencv-python
 pandas
 pytest
-scikit-image
 sphinx
 torch
 torchvision
