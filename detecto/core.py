@@ -485,7 +485,7 @@ class Model:
             if val_dataset is not None:
                 avg_loss = 0
                 with torch.no_grad():
-                    for images, targets in dataset:
+                    for images, targets in val_dataset:
                         self._convert_to_int_labels(targets)
                         images, targets = self._to_device(images, targets)
                         loss_dict = self._model(images, targets)
