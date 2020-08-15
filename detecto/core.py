@@ -1,13 +1,13 @@
+from detecto.config import config
+from detecto.utils import default_transforms, filter_top_predictions, xml_to_csv, _is_iterable, read_image
+from torchvision import transforms
+from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+
 import os
 import pandas as pd
 import random
 import torch
 import torchvision
-
-from detecto.config import config
-from detecto.utils import default_transforms, filter_top_predictions, xml_to_csv, _is_iterable, read_image
-from torchvision import transforms
-from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
 
 class DataLoader(torch.utils.data.DataLoader):
