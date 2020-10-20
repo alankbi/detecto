@@ -149,7 +149,7 @@ class Dataset(torch.utils.data.Dataset):
         image = read_image(img_name)
 
         # Read in xmin, ymin, xmax, and ymax
-        box = self._csv.iloc[idx, 4:]
+        box = self._csv.iloc[idx, 4:8]
         box = torch.tensor(box).view(1, 4)
 
         # Read in the label
