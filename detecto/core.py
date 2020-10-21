@@ -66,7 +66,7 @@ class Dataset(torch.utils.data.Dataset):
             the XML label files or a CSV file containing the label data.
             If a CSV file, the file should have the following columns in
             order: ``filename``, ``width``, ``height``, ``class``, ``xmin``,
-            ``ymin``, ``xmax``, and ``ymax``. See
+            ``ymin``, ``xmax``, ``ymax`` and ``image_id``. See
             :func:`detecto.utils.xml_to_csv` to generate CSV files in this
             format from XML label files.
         :type label_data: str
@@ -136,7 +136,8 @@ class Dataset(torch.utils.data.Dataset):
 
     # Returns the length of this dataset
     def __len__(self):
-        return len(self._csv)
+        # number of entries == number of unique image_ids in csv.
+        return len(self._csv['image_id'].unique().tolist())
 
     # Is what allows you to index the dataset, e.g. dataset[0]
     # dataset[index] returns a tuple containing the image and the targets dict
@@ -145,22 +146,29 @@ class Dataset(torch.utils.data.Dataset):
             idx = idx.tolist()
 
         # Read in the image from the file name in the 0th column
-        img_name = os.path.join(self._root_dir, self._csv.iloc[idx, 0])
+        object_entries = self._csv.loc[self._csv['image_id'] == idx]
+
+        img_name = os.path.join(self._root_dir, object_entries.iloc[0, 0])
         image = read_image(img_name)
 
-        # Read in xmin, ymin, xmax, and ymax
-        box = self._csv.iloc[idx, 4:8]
-        box = torch.tensor(box).view(1, 4)
+        boxes = []
+        labels = []
+        for object_idx, row in object_entries.iterrows():
+            # Read in xmin, ymin, xmax, and ymax
+            box = self._csv.iloc[object_idx, 4:8]
+            boxes.append(box)
+            # Read in the labe
+            label = self._csv.iloc[object_idx, 3]
+            labels.append(label)
 
-        # Read in the label
-        label = self._csv.iloc[idx, 3]
+        boxes = torch.tensor(boxes).view(-1, 4)
 
-        targets = {'boxes': box, 'labels': label}
+        targets = {'boxes': boxes, 'labels': labels}
 
         # Perform transformations
         if self.transform:
-            width = self._csv.loc[idx, 'width']
-            height = self._csv.loc[idx, 'height']
+            width = object_entries.iloc[0, 1]
+            height = object_entries.iloc[0, 2]
 
             # Apply the transforms manually to be able to deal with
             # transforms like Resize or RandomHorizontalFlip
@@ -189,15 +197,20 @@ class Dataset(torch.utils.data.Dataset):
                 if isinstance(t, transforms.RandomHorizontalFlip):
                     if random.random() < random_flip:
                         image = transforms.RandomHorizontalFlip(1)(image)
-                        # Flip box's x-coordinates
-                        box[0, 0] = width - box[0, 0]
-                        box[0, 2] = width - box[0, 2]
-                        box[0, 0], box[0, 2] = box[0, (2, 0)]
+                        for idx, box in enumerate(targets['boxes']):
+                            # Flip box's x-coordinates
+                            box[0] = width - box[0]
+                            box[2] = width - box[2]
+                            box[[0,2]] = box[[2,0]]
+                            targets['boxes'][idx] = box
                 else:
                     image = t(image)
 
             # Scale down box if necessary
-            targets['boxes'] = (box / scale_factor).long()
+            if scale_factor != 1.0:
+                for idx, box in enumerate(targets['boxes']):
+                    box = (box / scale_factor).long()
+                    targets['boxes'][idx] = box
 
         return image, targets
 
@@ -328,6 +341,7 @@ class Model:
             results.append(result)
 
         return results[0] if is_single_image else results
+
 
     def predict_top(self, images):
         """Takes in an image or list of images and returns the top
@@ -568,9 +582,12 @@ class Model:
     # Converts all string labels in a list of target dicts to
     # their corresponding int mappings
     def _convert_to_int_labels(self, targets):
-        for target in targets:
-            # Convert string labels to integer mapping
-            target['labels'] = torch.tensor(self._int_mapping[target['labels']]).view(1)
+        for idx, target in enumerate(targets):
+            # get all string labels for objects in a single image
+            labels_array = target['labels']
+            # convert string labels into one hot encoding
+            labels_int_array = [self._int_mapping[class_name] for class_name in labels_array]
+            target['labels'] = torch.tensor(labels_int_array)
 
     # Sends all images and targets to the same device as the model
     def _to_device(self, images, targets):
