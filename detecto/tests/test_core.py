@@ -12,13 +12,13 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 def test_dataset():
     # Test the format of the values returned by indexing the dataset
     dataset = get_dataset()
-    assert len(dataset) == 2
+    assert len(dataset) == 1  # there is only one image in the dataset (label.xml)
     assert isinstance(dataset[0][0], torch.Tensor)
     assert isinstance(dataset[0][1], dict)
     assert dataset[0][0].shape == (3, 1080, 1720)
     assert 'boxes' in dataset[0][1] and 'labels' in dataset[0][1]
-    assert dataset[0][1]['boxes'].shape == (1, 4)
-    assert dataset[0][1]['labels'] == 'start_tick'
+    assert dataset[0][1]['boxes'].shape == (2, 4)
+    assert dataset[0][1]['labels'] == ['start_tick', 'start_gate']
 
     transform = transforms.Compose([
         transforms.ToPILImage(),
@@ -29,20 +29,20 @@ def test_dataset():
 
     # Test that the transforms are properly applied
     dataset = get_dataset(transform=transform)
-    assert dataset[1][0].shape == (3, 108, 172)
-    assert torch.all(dataset[1][1]['boxes'][0] == torch.tensor([6, 41, 171, 107]))
+    assert dataset[0][0].shape == (3, 108, 172)
+    assert torch.all(dataset[0][1]['boxes'][1] == torch.tensor([6, 41, 171, 107]))
 
     # Test works when given an XML folder
     path = os.path.dirname(__file__)
     input_folder = os.path.join(path, 'static')
 
     dataset = Dataset(input_folder, input_folder)
-    assert len(dataset) == 2
+    assert len(dataset) == 1
     assert dataset[0][0].shape == (3, 1080, 1720)
     assert 'boxes' in dataset[0][1] and 'labels' in dataset[0][1]
 
     dataset = Dataset(input_folder)
-    assert len(dataset) == 2
+    assert len(dataset) == 1
     assert dataset[0][0].shape == (3, 1080, 1720)
     assert 'boxes' in dataset[0][1] and 'labels' in dataset[0][1]
 
@@ -75,14 +75,14 @@ def test_dataloader():
         iterations += 1
 
         assert isinstance(data, tuple)
-        assert len(data) == 2
+        assert len(data) == 2  # data[0] = image tensor, data[1] = targets dictionary
         assert isinstance(data[0], list)
-        assert len(data[0]) == 2
+        assert len(data[0]) == 1  # only one image in data[0] since label.xml contains one image only.
 
         assert isinstance(data[0][0], torch.Tensor)
-        assert isinstance(data[0][1], torch.Tensor)
-        assert 'boxes' in dataset[0][1] and 'labels' in dataset[1][1]
+        assert 'boxes' in data[1][0] and 'labels' in data[1][0]
 
+    assert 'boxes' in dataset[0][1] and 'labels' in dataset[0][1]
     assert iterations == 1
 
 
