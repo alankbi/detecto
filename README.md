@@ -1,7 +1,6 @@
 ![Detecto Logo](assets/logo_words.svg)
 --------------------------------------
     
-[![CircleCI](https://circleci.com/gh/alankbi/detecto/tree/master.svg?style=svg)](https://circleci.com/gh/alankbi/detecto/tree/master)
 [![Documentation Status](https://readthedocs.org/projects/detecto/badge/?version=latest)](https://detecto.readthedocs.io/en/latest/?badge=latest)
 [![Downloads](https://pepy.tech/badge/detecto)](https://pepy.tech/project/detecto)
 
