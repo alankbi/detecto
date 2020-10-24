@@ -23,7 +23,7 @@ autodoc_mock_imports = ['cv2', 'matplotlib', 'matplotlib.patches',
                         'matplotlib.pyplot', 'pandas', 'torch',
                         'torch.utils', 'torch.utils.data', 'torchvision',
                         'torchvision.transforms',
-                        'torchvision.models.detection.faster_rcnn']
+                        'torchvision.models.detection.faster_rcnn', 'tqdm']
 
 
 # -- Project information -----------------------------------------------------
