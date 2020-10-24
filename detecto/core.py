@@ -8,6 +8,7 @@ from detecto.config import config
 from detecto.utils import default_transforms, filter_top_predictions, xml_to_csv, _is_iterable, read_image
 from torchvision import transforms
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+from tqdm import tqdm
 
 
 class DataLoader(torch.utils.data.DataLoader):
@@ -393,7 +394,7 @@ class Model:
         return results
 
     def fit(self, dataset, val_dataset=None, epochs=10, learning_rate=0.005, momentum=0.9,
-            weight_decay=0.0005, gamma=0.1, lr_step_size=3, verbose=False):
+            weight_decay=0.0005, gamma=0.1, lr_step_size=3, verbose=True):
         """Train the model on the given dataset. If given a validation
         dataset, returns a list of loss scores at each epoch.
 
@@ -423,9 +424,9 @@ class Model:
         :param lr_step_size: (Optional) The number of epochs between each
             decay of ``learning_rate`` by ``gamma``. Defaults to 3.
         :type lr_step_size: int
-        :param verbose: (Optional) Whether to print the current epoch and
-             loss (if given a validation dataset) at each step. Defaults
-             to False.
+        :param verbose: (Optional) Whether to print the current epoch, progress,
+            and loss (if given a validation dataset) at each step, along with
+            some additional warnings if using a CPU. Defaults to True.
         :type verbose: bool
         :return: If ``val_dataset`` is not None and epochs is greater than 0,
             returns a list of the validation losses at each epoch. Otherwise,
@@ -450,6 +451,13 @@ class Model:
             [0.11191498369799327, 0.09899920264606253, 0.08454859235434461,
                 0.06825731012780788, 0.06236840748117637]
         """
+
+        if verbose and self._device == torch.device('cpu'):
+            print('It looks like you\'re training your model on a CPU. '
+                  'Consider switching to a GPU; otherwise, this method '
+                  'can take hours upon hours or even days to finish. '
+                  'For more information, see https://detecto.readthedocs.io/'
+                  'en/latest/usage/quickstart.html#technical-requirements')
 
         # If doing custom training, the given images will most likely be
         # normalized. This should fix the issue of poor performance on
@@ -479,7 +487,12 @@ class Model:
 
             # Training step
             self._model.train()
-            for images, targets in dataset:
+
+            if verbose:
+                print('Begin iterating over training dataset')
+
+            iterable = tqdm(dataset) if verbose else dataset
+            for images, targets in iterable:
                 self._convert_to_int_labels(targets)
                 images, targets = self._to_device(images, targets)
 
@@ -499,7 +512,11 @@ class Model:
             if val_dataset is not None:
                 avg_loss = 0
                 with torch.no_grad():
-                    for images, targets in val_dataset:
+                    if verbose:
+                        print('Begin iterating over validation dataset')
+
+                    iterable = tqdm(val_dataset) if verbose else val_dataset
+                    for images, targets in iterable:
                         self._convert_to_int_labels(targets)
                         images, targets = self._to_device(images, targets)
                         loss_dict = self._model(images, targets)
