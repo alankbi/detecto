@@ -96,7 +96,7 @@ class Dataset(torch.utils.data.Dataset):
         'labels' key. ``dict['boxes']`` is a torch.Tensor of size
         ``(N, 4)`` containing ``xmin``, ``ymin``, ``xmax``, and ``ymax``
         of N boxes, where N is the number of labeled objects in the image.
-        `dict['labels']`` is a list of size N containing the string labels
+        ``dict['labels']`` is a list of size N containing the string labels
         for each of the objects in the image being indexed.
 
         **Example**::
