@@ -39,9 +39,9 @@ class DataLoader(torch.utils.data.DataLoader):
             >>>     print(images[0].shape)
             >>>     print(targets[0])
             torch.Size([3, 1080, 1720])
-            {'boxes': tensor([[884, 387, 937, 784]]), 'labels': 'person'}
+            {'boxes': tensor([[884, 387, 937, 784]]), 'labels': ['person']}
             torch.Size([3, 1080, 1720])
-            {'boxes': tensor([[   1,  410, 1657, 1079]]), 'labels': 'car'}
+            {'boxes': tensor([[   1,  410, 1657, 1079]]), 'labels': ['car']}
             ...
         """
 
@@ -94,9 +94,10 @@ class Dataset(torch.utils.data.Dataset):
         Doing so returns a tuple of length 2. The first element is the
         image and the second element is a dict containing a 'boxes' and
         'labels' key. ``dict['boxes']`` is a torch.Tensor of size
-        ``(1, 4)`` containing ``xmin``, ``ymin``, ``xmax``, and ``ymax``
-        of the box and ``dict['labels']`` is the string label of the
-        detected object.
+        ``(N, 4)`` containing ``xmin``, ``ymin``, ``xmax``, and ``ymax``
+        of N boxes, where N is the number of labeled objects in the image.
+        `dict['labels']`` is a list of size N containing the string labels
+        for each of the objects in the image being indexed.
 
         **Example**::
 
@@ -115,7 +116,7 @@ class Dataset(torch.utils.data.Dataset):
             >>> print(target)
             4
             torch.Size([3, 720, 1280])
-            {'boxes': tensor([[564, 43, 736, 349]]), 'labels': 'balloon'}
+            {'boxes': tensor([[564, 43, 736, 349]]), 'labels': ['balloon']}
         """
 
         # CSV file contains: filename, width, height, class, xmin, ymin, xmax, ymax
