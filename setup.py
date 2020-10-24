@@ -8,7 +8,7 @@ setuptools.setup(
     version="1.2.0",
     author="Alan Bi",
     author_email="alan.bi326@gmail.com",
-    description="Build fully-functioning computer vision models with 5 lines of code",
+    description="Build fully-functioning computer vision models with PyTorch",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/alankbi/detecto",
