@@ -491,7 +491,7 @@ class Model:
             if verbose:
                 print('Begin iterating over training dataset')
 
-            iterable = tqdm(dataset) if verbose else dataset
+            iterable = tqdm(dataset, position=0, leave=True) if verbose else dataset
             for images, targets in iterable:
                 self._convert_to_int_labels(targets)
                 images, targets = self._to_device(images, targets)
@@ -515,7 +515,7 @@ class Model:
                     if verbose:
                         print('Begin iterating over validation dataset')
 
-                    iterable = tqdm(val_dataset) if verbose else val_dataset
+                    iterable = tqdm(val_dataset, position=0, leave=True) if verbose else val_dataset
                     for images, targets in iterable:
                         self._convert_to_int_labels(targets)
                         images, targets = self._to_device(images, targets)
