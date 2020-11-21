@@ -266,8 +266,8 @@ def xml_to_csv(xml_folder, output_file=None):
             label = member.find('name').text
 
             # Add image file name, image size, label, and box coordinates to CSV file
-            row = (filename, width, height, label, int(float(box[0].text)),
-                   int(float(box[1].text)), int(float(box[2].text)), int(float(box[3].text)), image_id)
+            row = (filename, width, height, label, int(float(box.find('xmin').text)),
+                   int(float(box.find('ymin').text)), int(float(box.find('xmax').text)), int(float(box.find('ymax').text)), image_id)
             xml_list.append(row)
         
         image_id += 1
