@@ -238,9 +238,9 @@ class Model:
             for details on specifying the device. Defaults to the GPU if
             available and the CPU if not.
         :type device: torch.device or None
-        
-        :param pretrained: (Optional) wether to load pretrained weights or not.
-        :type pretrained: boolean
+        :param pretrained: (Optional) Whether to load pretrained weights or not.
+            Defaults to True. 
+        :type pretrained: bool
 
         **Example**::
 
