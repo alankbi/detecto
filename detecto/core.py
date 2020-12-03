@@ -219,7 +219,7 @@ class Dataset(torch.utils.data.Dataset):
 
 class Model:
 
-    def __init__(self, classes=None, device=None):
+    def __init__(self, classes=None, device=None, pretrained=True):
         """Initializes a machine learning model for object detection.
         Models are built on top of PyTorch's `pre-trained models
         <https://pytorch.org/docs/stable/torchvision/models.html>`_,
@@ -238,6 +238,9 @@ class Model:
             for details on specifying the device. Defaults to the GPU if
             available and the CPU if not.
         :type device: torch.device or None
+        
+        :param pretrained: (Optional) wether to load pretrained weights or not.
+        :type pretrained: boolean
 
         **Example**::
 
@@ -249,7 +252,7 @@ class Model:
         self._device = device if device else config['default_device']
 
         # Load a model pre-trained on COCO
-        self._model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
+        self._model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=pretrained)
 
         if classes:
             # Get the number of input features for the classifier
