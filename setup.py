@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="detecto",
-    version="1.2.0",
+    version="1.2.1",
     author="Alan Bi",
     author_email="alan.bi326@gmail.com",
     description="Build fully-functioning computer vision models with PyTorch",
@@ -19,6 +19,7 @@ setuptools.setup(
         'pandas',
         'torch',
         'torchvision',
+        'tqdm',
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
