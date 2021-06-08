@@ -124,7 +124,7 @@ Next, create a Dataset object from your images and label data::
 If you plan to make many runs over your training data, you may want
 to generate a CSV file from your XML data. Then, whenever you create a
 Dataset, you can pass it this CSV file instead of your folder of XML
-files. This may make it a bit easier to work with your data in the future.
+files. This may make it a bit easier to work with your data in the future::
 
     from detecto.utils import xml_to_csv
 
