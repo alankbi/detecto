@@ -219,7 +219,7 @@ class Dataset(torch.utils.data.Dataset):
 
 class Model:
 
-    def __init__(self, classes=None, device=None, pretrained=True):
+    def __init__(self, classes=None, device=None, pretrained=True, modelname="fasterrcnn_resnet50_fpn"):
         """Initializes a machine learning model for object detection.
         Models are built on top of PyTorch's `pre-trained models
         <https://pytorch.org/docs/stable/torchvision/models.html>`_,
@@ -252,7 +252,12 @@ class Model:
         self._device = device if device else config['default_device']
 
         # Load a model pre-trained on COCO
-        self._model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=pretrained)
+        if modelname == "fasterrcnn_resnet50_fpn":
+            self._model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=pretrained)
+        elif modelname == "fasterrcnn_mobilenet_v3_large_fpn":
+            self._model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_fpn(pretrained=pretrained)
+        elif modelname == "fasterrcnn_mobilenet_v3_large_320_fpn":
+            self._model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=pretrained)
 
         if classes:
             # Get the number of input features for the classifier
