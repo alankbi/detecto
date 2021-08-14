@@ -241,6 +241,8 @@ class Model:
         :param pretrained: (Optional) Whether to load pretrained weights or not.
             Defaults to True. 
         :type pretrained: bool
+        :param modelname: (Optional) Name of the pretrained model
+        :type modelname: str
 
         **Example**::
 
@@ -258,6 +260,8 @@ class Model:
             self._model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_fpn(pretrained=pretrained)
         elif modelname == "fasterrcnn_mobilenet_v3_large_320_fpn":
             self._model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=pretrained)
+        else:
+            return ValueError("Unknown Pretrained Model")
 
         if classes:
             # Get the number of input features for the classifier
