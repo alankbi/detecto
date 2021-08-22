@@ -129,9 +129,17 @@ def read_image(path):
         >>> plt.imshow(image)
         >>> plt.show()
     """
+    if not os.path.isfile(path):
+        raise ValueError(f"Could not read image {path}")
 
     image = cv2.imread(path)
-    return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    try:
+        rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    except cv2.error as e:
+        raise ValueError(f"Could not convert image color: {str(e)}")
+
+    return rgb_image
 
 
 def reverse_normalize(image):
