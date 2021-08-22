@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import pytest
 import torch
 import torchvision
 
@@ -56,6 +57,24 @@ def test_read_image():
     image = get_image()
 
     assert (read_image(image_path) == image).all()
+
+
+def test_read_image_fails_with_image_not_found():
+    image_path = "foo/bar"
+
+    with pytest.raises(ValueError) as e:
+        read_image(image_path)
+
+    assert "Could not read image foo/bar" == str(e.value)
+
+
+def test_read_image_fails_with_cv_error():
+    image_path = "static/demo.gif"
+
+    with pytest.raises(ValueError) as e:
+        read_image(image_path)
+
+    assert "Could not convert image color:" in str(e.value)
 
 
 def test_split_video():
