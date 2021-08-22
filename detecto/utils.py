@@ -130,14 +130,14 @@ def read_image(path):
         >>> plt.show()
     """
     if not os.path.isfile(path):
-        raise ValueError(f"Could not read image {path}")
+        raise ValueError(f'Could not read image {path}')
 
     image = cv2.imread(path)
 
     try:
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     except cv2.error as e:
-        raise ValueError(f"Could not convert image color: {str(e)}")
+        raise ValueError(f'Could not convert image color: {str(e)}')
 
     return rgb_image
 

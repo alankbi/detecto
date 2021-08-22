@@ -219,11 +219,15 @@ class Dataset(torch.utils.data.Dataset):
 
 class Model:
 
-    def __init__(self, classes=None, device=None, pretrained=True, modelname='fasterrcnn_resnet50_fpn'):
+    DEFAULT = 'fasterrcnn_resnet50_fpn'
+    MOBILENET = 'fasterrcnn_mobilenet_v3_large_fpn'
+    MOBILENET_320 = 'fasterrcnn_mobilenet_v3_large_320_fpn'
+
+    def __init__(self, classes=None, device=None, pretrained=True, model_name=DEFAULT):
         """Initializes a machine learning model for object detection.
         Models are built on top of PyTorch's `pre-trained models
         <https://pytorch.org/docs/stable/torchvision/models.html>`_,
-        specifically the Faster R-CNN ResNet-50 FPN, but allow for
+        specifically the Faster R-CNN architectures, but allow for
         fine-tuning to predict on custom classes/labels.
 
         :param classes: (Optional) A list of classes/labels for the model
@@ -241,8 +245,12 @@ class Model:
         :param pretrained: (Optional) Whether to load pretrained weights or not.
             Defaults to True. 
         :type pretrained: bool
-        :param modelname: (Optional) Name of the pretrained model
-        :type modelname: str
+        :param model_name: (Optional) The name of the Faster R-CNN model to use.
+            Valid choices are ``fasterrcnn_resnet50_fpn``,
+            ``fasterrcnn_mobilenet_v3_large_fpn``, and
+            ``fasterrcnn_mobilenet_v3_large_320_fpn``. Defaults to
+            ``fasterrcnn_resnet50_fpn``.
+        :type model_name: str
 
         **Example**::
 
@@ -254,14 +262,15 @@ class Model:
         self._device = device if device else config['default_device']
 
         # Load a model pre-trained on COCO
-        if modelname == 'fasterrcnn_resnet50_fpn':
+        if model_name == self.DEFAULT:
             self._model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=pretrained)
-        elif modelname == 'fasterrcnn_mobilenet_v3_large_fpn':
+        elif model_name == self.MOBILENET:
             self._model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_fpn(pretrained=pretrained)
-        elif modelname == 'fasterrcnn_mobilenet_v3_large_320_fpn':
+        elif model_name == self.MOBILENET_320:
             self._model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=pretrained)
         else:
-            return ValueError('Unknown Pretrained Model')
+            raise ValueError(f'Invalid value {model_name} for model_name. ' +
+                             f'Please choose between {self.DEFAULT}, {self.MOBILENET}, and {self.MOBILENET_320}.')
 
         if classes:
             # Get the number of input features for the classifier
@@ -553,8 +562,7 @@ class Model:
         to allow for more advanced fine-tuning and the full use of
         features presented in the PyTorch library.
 
-        :return: The torchvision model, which is a Faster R-CNN ResNet-50
-            FPN with a FastRCNNPredictor box predictor.
+        :return: The torchvision model.
         :rtype: torchvision.models.detection.faster_rcnn.FasterRCNN
 
         **Example**::

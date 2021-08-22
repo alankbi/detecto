@@ -112,7 +112,8 @@ val_dataset = core.Dataset('val_labels.csv', 'val_images')  # Validation dataset
 # Create your own DataLoader with custom options
 loader = core.DataLoader(dataset, batch_size=2, shuffle=True) 
 
-model = core.Model(['car', 'truck', 'boat', 'plane'])
+# Use MobileNet instead of the default ResNet
+model = core.Model(['car', 'truck', 'boat', 'plane'], model_name='fasterrcnn_mobilenet_v3_large_fpn')
 losses = model.fit(loader, val_dataset, epochs=15, learning_rate=0.001, verbose=True)
 
 plt.plot(losses)  # Visualize loss throughout training

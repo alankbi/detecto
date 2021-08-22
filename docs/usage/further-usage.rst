@@ -39,7 +39,7 @@ torchvision model that Model uses::
     torch_model = model.get_internal_model()
     print(type(torch_model))
 
-The internal model is a `Faster R-CNN ResNet-50 FPN
+The internal model is a `Faster R-CNN architecture
 <https://pytorch.org/docs/stable/torchvision/models.html
 #object-detection-instance-segmentation-and-person-keypoint-detection>`_
 with a FastRCNNPredictor box predictor. With the torchvision model itself,
