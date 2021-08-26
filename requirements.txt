@@ -7,3 +7,4 @@ sphinx
 torch==1.8.0
 torchvision==0.10.0
 tqdm
+requests~=2.26.0
