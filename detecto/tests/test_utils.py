@@ -1,12 +1,9 @@
-import os
-import pandas as pd
 import pytest
-import torch
 import torchvision
 
-from .helpers import get_image
 from detecto.utils import *
 from detecto.utils import _is_iterable
+from .helpers import get_image
 
 
 def test_filter_top_predictions():
@@ -69,7 +66,8 @@ def test_read_image_fails_with_image_not_found():
 
 
 def test_read_image_fails_with_cv_error():
-    image_path = 'static/demo.gif'
+    path = os.path.dirname(__file__)
+    image_path = os.path.join(path, 'static/demo.gif')
 
     with pytest.raises(ValueError) as e:
         read_image(image_path)
