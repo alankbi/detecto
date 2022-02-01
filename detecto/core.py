@@ -246,11 +246,10 @@ class Model:
             Defaults to True. 
         :type pretrained: bool
         :param model_name: (Optional) The name of the Faster R-CNN model to use.
-            Valid choices are ``fasterrcnn_resnet50_fpn``,
-            ``fasterrcnn_mobilenet_v3_large_fpn``, and
-            ``fasterrcnn_mobilenet_v3_large_320_fpn``. Defaults to
-            ``fasterrcnn_resnet50_fpn``. (Note: this parameter will be made
-            available in the next release)
+            Valid choices are ``fasterrcnn_resnet50_fpn`` (``Model.DEFAULT``),
+            ``fasterrcnn_mobilenet_v3_large_fpn`` (``Model.MOBILENET``), and
+            ``fasterrcnn_mobilenet_v3_large_320_fpn`` (``Model.MOBILENET_320``).
+            Defaults to ``fasterrcnn_resnet50_fpn``.
         :type model_name: str
 
         **Example**::
@@ -263,7 +262,7 @@ class Model:
         self._device = device if device else config['default_device']
 
         # Load a model pre-trained on COCO
-        if model_name == self.DEFAULT:  # TODO: update docs when released
+        if model_name == self.DEFAULT:
             self._model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=pretrained)
         elif model_name == self.MOBILENET:
             self._model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_fpn(pretrained=pretrained)
