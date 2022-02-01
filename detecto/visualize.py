@@ -50,9 +50,9 @@ def detect_live(model, score_filter=0.6):
                 continue
 
             box = boxes[i]
-            cv2.rectangle(frame, (box[0], box[1]), (box[2], box[3]), (255, 0, 0), 3)
+            cv2.rectangle(frame, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (255, 0, 0), 3)
             if labels:
-                cv2.putText(frame, '{}: {}'.format(labels[i], round(scores[i].item(), 2)), (box[0], box[1] - 10),
+                cv2.putText(frame, '{}: {}'.format(labels[i], round(scores[i].item(), 2)), (int(box[0]), int(box[1] - 10)),
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
 
         cv2.imshow('Detecto', frame)
