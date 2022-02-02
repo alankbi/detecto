@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="detecto",
-    version="1.2.1",
+    version="1.2.2",
     author="Alan Bi",
     author_email="alan.bi326@gmail.com",
     description="Build fully-functioning computer vision models with PyTorch",
