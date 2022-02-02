@@ -162,11 +162,15 @@ cd detecto
 pip3 install -r requirements.txt
 ```
 
-When adding code, be sure to write unit tests and docstrings where necessary. 
+When adding code, be sure to write unit tests and docstrings where necessary.  
 
 Tests are located in `detecto/tests` and can be run using pytest:
 
 `python3 -m pytest`
+
+Note that some tests may fail due to them requiring a pretrained model file. 
+This file can be downloaded [here](https://www.dropbox.com/s/kjalrfs3la97du8/model.pth?dl=1)
+and should be placed at `detecto/tests/static/model.pth`.
 
 To generate the documentation locally, run the following commands:
 

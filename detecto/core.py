@@ -246,10 +246,10 @@ class Model:
             Defaults to True. 
         :type pretrained: bool
         :param model_name: (Optional) The name of the Faster R-CNN model to use.
-            Valid choices are ``fasterrcnn_resnet50_fpn`` (``Model.DEFAULT``),
-            ``fasterrcnn_mobilenet_v3_large_fpn`` (``Model.MOBILENET``), and
-            ``fasterrcnn_mobilenet_v3_large_320_fpn`` (``Model.MOBILENET_320``).
-            Defaults to ``fasterrcnn_resnet50_fpn``.
+            Valid choices are ``"fasterrcnn_resnet50_fpn"`` (``Model.DEFAULT``),
+            ``"fasterrcnn_mobilenet_v3_large_fpn"`` (``Model.MOBILENET``), and
+            ``"fasterrcnn_mobilenet_v3_large_320_fpn"`` (``Model.MOBILENET_320``).
+            Defaults to ``"fasterrcnn_resnet50_fpn"``.
         :type model_name: str
 
         **Example**::
