@@ -74,7 +74,7 @@ def test_read_image_fails_with_cv_error():
     with pytest.raises(ValueError) as e:
         read_image(image_path)
 
-    assert 'Could not convert image color:' in str(e.value)
+    assert 'Could not read image static/demo.gif' in str(e.value)
 
 
 def test_split_video():
