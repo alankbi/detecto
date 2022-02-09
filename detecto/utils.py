@@ -13,7 +13,7 @@ def default_transforms():
     applied to images passed to classes in the :mod:`detecto.core` module.
 
     :return: A torchvision `transforms.Compose
-        <https://pytorch.org/docs/stable/torchvision/transforms.html>`_
+        <https://pytorch.org/vision/stable/transforms.html#torchvision.transforms.Compose>`_
         object containing a transforms.ToTensor object and the
         transforms.Normalize object returned by
         :func:`detecto.utils.normalize_transform`.
@@ -83,7 +83,7 @@ def filter_top_predictions(labels, boxes, scores):
 
 def normalize_transform():
     """Returns a torchvision `transforms.Normalize
-    <https://pytorch.org/docs/stable/torchvision/transforms.html>`_ object
+    <https://pytorch.org/vision/stable/transforms.html#torchvision.transforms.Normalize>`_ object
     with default mean and standard deviation values as required by PyTorch's
     pre-trained models.
 
