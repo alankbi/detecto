@@ -141,6 +141,35 @@ def read_image(path):
 
     return rgb_image
 
+def read_folder(path):
+    """Helper function that reads in a folder of images as a 
+    generator of `NumPy <https://numpy.org/>`_ arrays. Equivalent to using
+    read_image on each file in the folder as a a generator.
+
+    :param path: The path to the image folder.
+    :type path: str
+    :return: Image in NumPy array format
+    :rtype: Generator[ndarray,None,None]
+
+    **Example**::
+
+        >>> import matplotlib.pyplot as plt
+        >>> from detecto.utils import read_folder
+
+        >>> images = read_folder('images')
+        >>> for im in images:
+        >>>     plt.imshow(im)
+        >>>     plt.show()
+    """
+
+    if not os.path.isdir(path):
+        raise ValueError(f'Could not find folder {path}')
+
+    for im in os.scandir(path):
+        yield read_image(im.path)
+
+        
+
 
 def reverse_normalize(image):
     """Reverses the normalization applied on an image by the
