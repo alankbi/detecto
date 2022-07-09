@@ -162,7 +162,7 @@ def read_folder(path):
         >>>     plt.show()
     """
 
-    if not os.path.isdir():
+    if not os.path.isdir(path):
         raise ValueError(f'Could not find folder {path}')
 
     for im in os.scandir(path):
