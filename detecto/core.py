@@ -594,7 +594,7 @@ class Model:
         torch.save(self._model.state_dict(), file)
 
     @staticmethod
-    def load(file, classes):
+    def load(file, classes, model_name=DEFAULT):
         """Loads a model from a .pth file containing the model weights.
 
         :param file: The path to the .pth file containing the saved model.
@@ -613,7 +613,7 @@ class Model:
             >>> model = Model.load('model_weights.pth', ['ant', 'bee'])
         """
 
-        model = Model(classes)
+        model = Model(classes, model_name=model_name)
         model._model.load_state_dict(torch.load(file, map_location=model._device))
         return model
 
