@@ -144,11 +144,11 @@ def detect_video(model, input_file, output_file, fps=30, score_filter=0.6):
 
             # Create the box around each object detected
             # Parameters: frame, (start_x, start_y), (end_x, end_y), (r, g, b), thickness
-            cv2.rectangle(frame, (box[0], box[1]), (box[2], box[3]), (255, 0, 0), 3)
+            cv2.rectangle(frame, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (255, 0, 0), 3)
 
             # Write the label and score for the boxes
             # Parameters: frame, text, (start_x, start_y), font, font scale, (r, g, b), thickness
-            cv2.putText(frame, '{}: {}'.format(label, round(score.item(), 2)), (box[0], box[1] - 10),
+            cv2.putText(frame, '{}: {}'.format(label, round(score.item(), 2)), (int(box[0]), int(box[1]) - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
 
         # Write this frame to our video file
