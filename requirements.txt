@@ -4,6 +4,6 @@ opencv-python
 pandas
 pytest
 sphinx
-torch==1.9.0
+torch==2.2.0
 torchvision==0.10.0
 tqdm
